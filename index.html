@@ -3,563 +3,260 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Akash Agarwal — cinematic 3D scrollytelling portfolio built with procedural Three.js." />
-  <meta name="theme-color" content="#061018" />
-  <title>Akash Agarwal | 3D Scrollytelling Portfolio</title>
+  <meta name="description" content="Akash Agarwal — first-person 3D laptop scrollytelling portfolio." />
+  <meta name="theme-color" content="#05070d" />
+  <title>Akash Agarwal | First-Person 3D Portfolio</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            space: ['Space Grotesk', 'sans-serif'],
+            code: ['Fira Code', 'monospace']
+          },
+          colors: {
+            acid: '#00ff9d',
+            cyanx: '#57f7ff',
+            plasma: '#a855f7',
+            void: '#05070d'
+          }
+        }
+      }
+    };
+  </script>
+
   <style>
     :root {
-      --ink: #eef8ff;
-      --muted: rgba(238, 248, 255, 0.68);
-      --cyan: #52f3ff;
-      --blue: #4b7dff;
-      --violet: #9a6bff;
-      --pink: #ff68d8;
-      --glass: rgba(9, 20, 36, 0.54);
-      --line: rgba(255, 255, 255, 0.16);
-      --shadow: rgba(0, 0, 0, 0.42);
+      --bg: #05070d;
+      --cyan: #57f7ff;
+      --acid: #00ff9d;
+      --purple: #a855f7;
+      --pink: #ff4fd8;
+      --ink: #effaff;
     }
 
     * { box-sizing: border-box; }
-
-    html {
-      min-height: 100%;
-      background: #050913;
-      cursor: none;
-      scroll-behavior: auto;
-    }
-
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); cursor: none; }
     body {
-      margin: 0;
-      min-height: 500vh;
+      min-height: 760vh;
       overflow-x: hidden;
-      color: var(--ink);
-      font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      cursor: none;
-      background:
-        radial-gradient(circle at 15% 20%, rgba(82, 243, 255, 0.12), transparent 26rem),
-        radial-gradient(circle at 85% 15%, rgba(154, 107, 255, 0.16), transparent 25rem),
-        #050913;
+      font-family: 'Space Grotesk', system-ui, sans-serif;
     }
+    a, button, [data-clickable] { cursor: none; }
+    ::selection { background: var(--cyan); color: #031018; }
 
-    a, button, .project-card, .portfolio-card, [data-interactive] { cursor: none; }
-
-    ::selection { background: var(--cyan); color: #051018; }
-
-    #experience {
+    #webgl, #css3d-stage {
       position: fixed;
       inset: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      z-index: 1;
-      background: #050913;
+      width: 100vw;
+      height: 100vh;
     }
+    #webgl { z-index: 1; display: block; }
+    #css3d-stage { z-index: 2; pointer-events: none; overflow: hidden; }
+    #css3d-stage > div { pointer-events: none; }
 
-    .vignette,
-    .grain,
-    .scroll-hint,
-    .chapter-indicator,
-    #portfolio-overlay,
-    #custom-cursor {
-      position: fixed;
-      pointer-events: none;
-    }
-
-    .vignette {
-      inset: 0;
-      z-index: 2;
-      background:
-        radial-gradient(circle at 50% 50%, transparent 0 46%, rgba(3, 6, 13, 0.58) 76%, rgba(3, 6, 13, 0.94) 100%),
-        linear-gradient(90deg, rgba(3, 6, 13, 0.48), transparent 18% 82%, rgba(3, 6, 13, 0.48));
-    }
-
-    .grain {
-      inset: -20%;
-      z-index: 3;
-      opacity: 0.11;
-      mix-blend-mode: screen;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 260 260' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='.9'/%3E%3C/svg%3E");
-      animation: grainDrift 1.2s steps(3) infinite;
-    }
-
-    @keyframes grainDrift {
-      0% { transform: translate3d(0, 0, 0); }
-      33% { transform: translate3d(-3%, 2%, 0); }
-      66% { transform: translate3d(2%, -4%, 0); }
-      100% { transform: translate3d(0, 0, 0); }
-    }
-
-    .scroll-hint {
-      left: clamp(1rem, 3vw, 2.5rem);
-      bottom: clamp(1rem, 3vw, 2rem);
-      z-index: 4;
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-      color: rgba(238, 248, 255, 0.72);
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-
-    .scroll-hint::before {
-      content: "";
-      width: 2.25rem;
-      height: 3.75rem;
-      border: 1px solid rgba(238, 248, 255, 0.32);
-      border-radius: 999px;
-      box-shadow: inset 0 0 20px rgba(82, 243, 255, 0.12), 0 0 25px rgba(82, 243, 255, 0.16);
-    }
-
-    .scroll-hint::after {
-      content: "";
-      position: absolute;
-      left: 1.03rem;
-      top: 0.76rem;
-      width: 0.22rem;
-      height: 0.8rem;
-      border-radius: 999px;
-      background: var(--cyan);
-      box-shadow: 0 0 14px var(--cyan);
-      animation: wheel 1.7s ease-in-out infinite;
-    }
-
-    @keyframes wheel {
-      0%, 100% { transform: translateY(0); opacity: 0.22; }
-      42% { transform: translateY(1.05rem); opacity: 1; }
-    }
-
-    body.portfolio-live .scroll-hint {
-      opacity: 0;
-      transform: translateY(1rem);
-    }
-
-    .chapter-indicator {
-      top: clamp(1rem, 3vw, 2rem);
-      left: clamp(1rem, 3vw, 2.5rem);
-      z-index: 4;
-      display: grid;
-      gap: 0.45rem;
-      width: min(22rem, calc(100vw - 2rem));
-      color: rgba(238, 248, 255, 0.74);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      transition: opacity 0.45s ease;
-    }
-
-    body.portfolio-live .chapter-indicator { opacity: 0; }
-
-    .progress-track {
-      height: 1px;
-      overflow: hidden;
-      background: rgba(255, 255, 255, 0.18);
-    }
-
-    .progress-fill {
-      display: block;
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--cyan), var(--violet), var(--pink));
-      box-shadow: 0 0 18px rgba(82, 243, 255, 0.75);
-    }
-
-    #portfolio-overlay {
-      inset: 0;
-      z-index: 10;
-      display: grid;
-      place-items: center;
-      padding: clamp(1rem, 4vw, 4rem);
-      opacity: 0;
-      visibility: hidden;
+    .screen-ui {
+      width: 1200px;
+      height: 750px;
       overflow: auto;
-      pointer-events: none;
-      background:
-        radial-gradient(circle at 18% 12%, rgba(82, 243, 255, 0.19), transparent 20rem),
-        radial-gradient(circle at 86% 20%, rgba(255, 104, 216, 0.16), transparent 22rem),
-        linear-gradient(135deg, rgba(5, 10, 22, 0.7), rgba(10, 16, 34, 0.86));
-      backdrop-filter: blur(22px) saturate(135%);
-    }
-
-    body.portfolio-live #portfolio-overlay {
       pointer-events: auto;
-    }
-
-    .portfolio-shell {
-      width: min(1180px, 100%);
-      display: grid;
-      gap: 1.2rem;
-      transform: translateY(1.4rem) scale(0.985);
-    }
-
-    .hero-card,
-    .portfolio-card,
-    .project-card {
-      border: 1px solid var(--line);
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.045));
-      box-shadow: 0 24px 90px var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(24px) saturate(145%);
-    }
-
-    .hero-card {
-      position: relative;
-      overflow: hidden;
-      padding: clamp(1.35rem, 5vw, 4rem);
-      border-radius: 2rem;
-      isolation: isolate;
-    }
-
-    .hero-card::before {
-      content: "";
-      position: absolute;
-      inset: -1px;
-      z-index: -1;
+      color: var(--ink);
       background:
-        linear-gradient(115deg, rgba(82, 243, 255, 0.18), transparent 32%, rgba(154, 107, 255, 0.18) 66%, rgba(255, 104, 216, 0.15)),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 48px);
+        radial-gradient(circle at 12% 2%, rgba(0, 255, 157, 0.20), transparent 23rem),
+        radial-gradient(circle at 92% 15%, rgba(168, 85, 247, 0.24), transparent 25rem),
+        linear-gradient(145deg, rgba(5, 10, 22, 0.96), rgba(2, 6, 16, 0.93));
+      border: 1px solid rgba(87, 247, 255, 0.42);
+      border-radius: 34px;
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+        inset 0 0 80px rgba(87, 247, 255, 0.10),
+        0 0 48px rgba(87, 247, 255, 0.35);
+      transform-style: preserve-3d;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(87, 247, 255, 0.55) rgba(255, 255, 255, 0.08);
     }
+    .screen-ui::-webkit-scrollbar { width: 10px; }
+    .screen-ui::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.07); }
+    .screen-ui::-webkit-scrollbar-thumb { background: linear-gradient(var(--cyan), var(--purple)); border-radius: 999px; }
+    .screen-ui a { pointer-events: auto; }
 
-    .eyebrow {
+    .glass-card {
+      border: 1px solid rgba(87, 247, 255, 0.22);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.045));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 18px 55px rgba(0, 0, 0, 0.22);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+    .chip {
+      border: 1px solid rgba(87, 247, 255, 0.28);
+      background: rgba(87, 247, 255, 0.08);
+      box-shadow: inset 0 0 20px rgba(87, 247, 255, 0.08);
+    }
+    .screen-link {
       display: inline-flex;
       align-items: center;
-      gap: 0.6rem;
-      margin: 0 0 1rem;
-      color: var(--cyan);
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 0.62rem;
-      height: 0.62rem;
-      border-radius: 999px;
-      background: var(--cyan);
-      box-shadow: 0 0 24px var(--cyan);
-    }
-
-    h1 {
-      margin: 0;
-      max-width: 11ch;
-      font-size: clamp(4rem, 14vw, 10.5rem);
-      line-height: 0.78;
-      letter-spacing: -0.08em;
-      text-transform: uppercase;
-    }
-
-    .headline {
-      max-width: 860px;
-      margin: 1.4rem 0 0;
-      color: rgba(238, 248, 255, 0.86);
-      font-size: clamp(1.05rem, 2.15vw, 1.75rem);
-      line-height: 1.35;
-      font-weight: 500;
-    }
-
-    .portfolio-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-      gap: 1.2rem;
-    }
-
-    .portfolio-card,
-    .project-card {
-      border-radius: 1.4rem;
-      padding: clamp(1.1rem, 3vw, 2rem);
-    }
-
-    .portfolio-card h2,
-    .project-card h3 {
-      margin: 0 0 0.9rem;
-      font-size: 0.85rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--cyan);
-    }
-
-    .portfolio-card p,
-    .portfolio-card li,
-    .project-card p {
-      color: var(--muted);
-      font-size: clamp(0.98rem, 1.7vw, 1.08rem);
-      line-height: 1.75;
-    }
-
-    .portfolio-card p { margin: 0; }
-
-    .achievement-list {
-      display: grid;
-      gap: 0.8rem;
-      padding: 0;
-      margin: 0;
-      list-style: none;
-    }
-
-    .achievement-list li {
-      position: relative;
-      padding-left: 1.3rem;
-    }
-
-    .achievement-list li::before {
-      content: "✦";
-      position: absolute;
-      left: 0;
-      color: var(--pink);
-      text-shadow: 0 0 14px var(--pink);
-    }
-
-    .projects {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 1.2rem;
-    }
-
-    .project-card {
-      position: relative;
-      min-height: 13rem;
-      overflow: hidden;
-      transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
-    }
-
-    .project-card::after {
-      content: "";
-      position: absolute;
-      right: -5rem;
-      bottom: -5rem;
-      width: 11rem;
-      height: 11rem;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(82, 243, 255, 0.18), transparent 66%);
-      transition: transform 0.35s ease;
-    }
-
-    .project-card:hover,
-    .project-card:focus-within {
-      transform: translateY(-0.35rem);
-      border-color: rgba(82, 243, 255, 0.52);
-      background: linear-gradient(145deg, rgba(82, 243, 255, 0.13), rgba(255, 255, 255, 0.055));
-    }
-
-    .project-card:hover::after,
-    .project-card:focus-within::after { transform: scale(1.4); }
-
-    .project-card a {
-      position: relative;
-      z-index: 1;
-      display: inline-flex;
-      align-items: center;
+      justify-content: center;
       gap: 0.55rem;
-      margin-top: 0.9rem;
-      color: var(--ink);
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .project-card a::after { content: "↗"; color: var(--cyan); }
-
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-      margin-top: 1.7rem;
-    }
-
-    .cta-row a,
-    .cta-row button {
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(87, 247, 255, 0.34);
       border-radius: 999px;
-      padding: 0.86rem 1.12rem;
+      padding: 0.82rem 1rem;
       color: var(--ink);
-      background: rgba(255, 255, 255, 0.08);
       text-decoration: none;
-      font: inherit;
-      font-weight: 700;
-      transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease;
+      background: linear-gradient(135deg, rgba(87, 247, 255, 0.12), rgba(168, 85, 247, 0.14));
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     }
+    .screen-link:hover, .screen-link:focus-visible {
+      transform: translateY(-3px);
+      border-color: rgba(0, 255, 157, 0.72);
+      background: linear-gradient(135deg, rgba(0, 255, 157, 0.18), rgba(87, 247, 255, 0.15));
+      box-shadow: 0 0 28px rgba(0, 255, 157, 0.16);
+      outline: none;
+    }
+    .terminal-dock {
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+      border-top: 1px solid rgba(87, 247, 255, 0.25);
+      background: rgba(2, 6, 16, 0.82);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+    .terminal-line::before { content: '$ '; color: var(--acid); }
 
-    .cta-row a:hover,
-    .cta-row button:hover {
-      transform: translateY(-0.18rem);
-      border-color: rgba(82, 243, 255, 0.62);
-      background: rgba(82, 243, 255, 0.13);
+    .hud {
+      position: fixed;
+      left: clamp(1rem, 3vw, 2rem);
+      bottom: clamp(1rem, 3vw, 2rem);
+      z-index: 3;
+      pointer-events: none;
+      font-family: 'Fira Code', monospace;
+      color: rgba(239, 250, 255, 0.72);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 0.72rem;
+      text-shadow: 0 0 18px rgba(87, 247, 255, 0.65);
     }
+    .progress-track { width: min(380px, 62vw); height: 1px; margin-top: 0.75rem; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
+    #progress { display: block; width: 0%; height: 100%; background: linear-gradient(90deg, var(--acid), var(--cyan), var(--purple), var(--pink)); box-shadow: 0 0 18px var(--cyan); }
 
     #custom-cursor {
+      position: fixed;
       left: 0;
       top: 0;
       z-index: 9999;
-      width: 1rem;
-      height: 1rem;
+      width: 18px;
+      height: 18px;
       display: grid;
       place-items: center;
-      transform: translate3d(-50%, -50%, 0);
-      will-change: transform;
-      filter: drop-shadow(0 0 14px rgba(82, 243, 255, 0.95));
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 0 14px rgba(87, 247, 255, 0.95));
     }
-
     #custom-cursor .dot {
-      width: 0.74rem;
-      height: 0.74rem;
-      border-radius: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
       background: var(--cyan);
-      box-shadow: 0 0 12px var(--cyan), 0 0 34px rgba(82, 243, 255, 0.68);
+      box-shadow: 0 0 16px var(--cyan), 0 0 38px rgba(87, 247, 255, 0.72);
       transition: opacity 0.12s ease, transform 0.12s ease;
     }
-
     #custom-cursor svg {
       position: absolute;
-      width: 3.15rem;
-      height: 3.15rem;
+      width: 54px;
+      height: 54px;
       opacity: 0;
-      transform: translate(0.55rem, 0.5rem) rotate(-12deg) scale(0.55);
-      transform-origin: 35% 18%;
+      transform: translate(12px, 10px) rotate(-12deg) scale(0.55);
+      transform-origin: 34% 16%;
       transition: opacity 0.12s ease, transform 0.12s ease;
     }
-
-    #custom-cursor.is-pointer .dot {
-      opacity: 0;
-      transform: scale(0.2);
-    }
-
+    #custom-cursor.is-pointer .dot { opacity: 0; transform: scale(0.1); }
     #custom-cursor.is-pointer svg {
       opacity: 1;
-      transform: translate(0.55rem, 0.5rem) rotate(-12deg) scale(1);
+      transform: translate(12px, 10px) rotate(-12deg) scale(1);
       animation: handPulse 0.72s ease-in-out infinite alternate;
     }
-
     @keyframes handPulse {
-      from { filter: drop-shadow(0 0 10px rgba(82, 243, 255, 0.75)); }
-      to { filter: drop-shadow(0 0 25px rgba(255, 104, 216, 0.9)); transform: translate(0.55rem, 0.5rem) rotate(-12deg) scale(1.08); }
+      from { filter: drop-shadow(0 0 10px rgba(87, 247, 255, 0.85)); }
+      to { filter: drop-shadow(0 0 26px rgba(255, 79, 216, 0.95)); transform: translate(12px, 10px) rotate(-12deg) scale(1.08); }
     }
 
-    .fallback-note {
+    .fallback {
       position: fixed;
       right: 1rem;
       bottom: 1rem;
       z-index: 20;
-      max-width: 24rem;
+      max-width: 26rem;
       display: none;
-      padding: 0.8rem 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 0.9rem 1rem;
+      border: 1px solid rgba(87, 247, 255, 0.36);
       border-radius: 1rem;
-      color: var(--muted);
-      background: rgba(5, 10, 22, 0.72);
-      backdrop-filter: blur(16px);
-      font-size: 0.85rem;
+      color: rgba(239, 250, 255, 0.82);
+      background: rgba(5, 10, 22, 0.86);
+      font: 0.9rem 'Space Grotesk', sans-serif;
     }
+    body.no-webgl .fallback { display: block; }
 
-    body.no-webgl .fallback-note { display: block; }
-
-    @media (max-width: 900px) {
-      .portfolio-grid,
-      .projects { grid-template-columns: 1fr; }
-      #portfolio-overlay { align-items: start; }
-      .hero-card { border-radius: 1.35rem; }
-      h1 { font-size: clamp(3.1rem, 18vw, 6rem); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    @media (max-width: 720px) {
+      body { min-height: 820vh; }
+      .screen-ui { width: 1000px; height: 680px; }
     }
   </style>
 </head>
 <body>
-  <canvas id="experience" aria-label="Procedural 3D scrollytelling scene"></canvas>
-  <div class="vignette" aria-hidden="true"></div>
-  <div class="grain" aria-hidden="true"></div>
+  <canvas id="webgl" aria-label="First-person 3D high-tech room with laptop"></canvas>
+  <div id="css3d-stage" aria-label="CSS3D laptop screen portfolio"></div>
 
-  <aside class="chapter-indicator" aria-hidden="true">
-    <span id="chapter-label">00 / At the threshold</span>
-    <span class="progress-track"><span class="progress-fill" id="progress-fill"></span></span>
+  <aside class="hud" aria-hidden="true">
+    <div id="chapter">00 / ENTERING ROOM</div>
+    <div class="progress-track"><span id="progress"></span></div>
   </aside>
-
-  <div class="scroll-hint" aria-hidden="true">Scroll the scene</div>
-
-  <main id="portfolio-overlay" aria-label="Akash Agarwal portfolio">
-    <section class="portfolio-shell">
-      <header class="hero-card">
-        <p class="eyebrow">Laptop reality unlocked</p>
-        <h1>Akash Agarwal</h1>
-        <p class="headline">B.Tech in AI &amp; ML @ KIIT | ML Developer Intern @ Infiltrix | Competitive Programmer</p>
-        <div class="cta-row">
-          <a href="https://code-flow-viz-2-0-frontend.vercel.app" target="_blank" rel="noreferrer" data-interactive>Explore CodeFlowViz</a>
-          <button type="button" data-interactive onclick="window.scrollTo({ top: 0, behavior: 'smooth' })">Replay Journey</button>
-        </div>
-      </header>
-
-      <div class="portfolio-grid">
-        <article class="portfolio-card">
-          <h2>About</h2>
-          <p>Proficient in Python, C++, React, and Next.js, with a solid foundation in data structures, algorithms, and machine learning architectures.</p>
-        </article>
-
-        <article class="portfolio-card">
-          <h2>Experience &amp; Achievements</h2>
-          <ul class="achievement-list">
-            <li>Social Summer of Code (SSoC) - Top 100 Contributor</li>
-            <li>Tech Organizer - "Code Kurukshetra" at KIIT FEST 9.0</li>
-            <li>Web Development Domain - AlgoZenith KIIT Chapter</li>
-            <li>Founder &amp; Contributor - CodeZen (DSA &amp; CP community)</li>
-          </ul>
-        </article>
-      </div>
-
-      <section class="projects" aria-label="Highlighted projects">
-        <article class="project-card" tabindex="0" data-interactive>
-          <h3>CodeFlowViz-2.0</h3>
-          <p>Interactive code visualization platform.</p>
-          <a href="https://code-flow-viz-2-0-frontend.vercel.app" target="_blank" rel="noreferrer">Live: code-flow-viz-2-0-frontend.vercel.app</a>
-        </article>
-        <article class="project-card" tabindex="0" data-interactive>
-          <h3>FinVerify AI</h3>
-          <p>Low-latency financial verification system built with React, FastAPI, Python, Scikit-learn, and MongoDB.</p>
-        </article>
-      </section>
-    </section>
-  </main>
 
   <div id="custom-cursor" aria-hidden="true">
     <span class="dot"></span>
-    <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pointing hand cursor">
-      <path d="M32.5 9.5C28.1 9.5 24.5 13.1 24.5 17.5V46.4L20.7 42.8C17.6 39.8 12.6 39.8 9.5 42.9C6.6 45.8 6.4 50.4 9 53.6L26.2 74.9C29.3 78.8 34.1 81.1 39.2 81.1H57.3C66.7 81.1 74.3 73.5 74.3 64.1V40.5C74.3 36.3 70.9 32.9 66.7 32.9C65.2 32.9 63.8 33.3 62.6 34.1C61.5 31 58.6 28.8 55.1 28.8C53.3 28.8 51.6 29.4 50.3 30.4C48.9 27.9 46.3 26.3 43.3 26.3C42.3 26.3 41.3 26.5 40.5 26.8V17.5C40.5 13.1 36.9 9.5 32.5 9.5Z" fill="rgba(7,17,28,.96)"/>
-      <path d="M32.5 9.5C28.1 9.5 24.5 13.1 24.5 17.5V46.4L20.7 42.8C17.6 39.8 12.6 39.8 9.5 42.9C6.6 45.8 6.4 50.4 9 53.6L26.2 74.9C29.3 78.8 34.1 81.1 39.2 81.1H57.3C66.7 81.1 74.3 73.5 74.3 64.1V40.5C74.3 36.3 70.9 32.9 66.7 32.9C65.2 32.9 63.8 33.3 62.6 34.1C61.5 31 58.6 28.8 55.1 28.8C53.3 28.8 51.6 29.4 50.3 30.4C48.9 27.9 46.3 26.3 43.3 26.3C42.3 26.3 41.3 26.5 40.5 26.8V17.5C40.5 13.1 36.9 9.5 32.5 9.5Z" stroke="#52F3FF" stroke-width="4" stroke-linejoin="round"/>
-      <path d="M40.5 35.1V53.2M50.6 37.2V54.4M62.6 41.1V56.1M24.8 46.8L36.1 58.5" stroke="#FF68D8" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M21 14L10 8M25 5L22 0M43 9L52 2" stroke="#9A6BFF" stroke-width="3" stroke-linecap="round"/>
+    <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32.5 9.5C28.1 9.5 24.5 13.1 24.5 17.5V46.4L20.7 42.8C17.6 39.8 12.6 39.8 9.5 42.9C6.6 45.8 6.4 50.4 9 53.6L26.2 74.9C29.3 78.8 34.1 81.1 39.2 81.1H57.3C66.7 81.1 74.3 73.5 74.3 64.1V40.5C74.3 36.3 70.9 32.9 66.7 32.9C65.2 32.9 63.8 33.3 62.6 34.1C61.5 31 58.6 28.8 55.1 28.8C53.3 28.8 51.6 29.4 50.3 30.4C48.9 27.9 46.3 26.3 43.3 26.3C42.3 26.3 41.3 26.5 40.5 26.8V17.5C40.5 13.1 36.9 9.5 32.5 9.5Z" fill="rgba(3,8,18,.98)"/>
+      <path d="M32.5 9.5C28.1 9.5 24.5 13.1 24.5 17.5V46.4L20.7 42.8C17.6 39.8 12.6 39.8 9.5 42.9C6.6 45.8 6.4 50.4 9 53.6L26.2 74.9C29.3 78.8 34.1 81.1 39.2 81.1H57.3C66.7 81.1 74.3 73.5 74.3 64.1V40.5C74.3 36.3 70.9 32.9 66.7 32.9C65.2 32.9 63.8 33.3 62.6 34.1C61.5 31 58.6 28.8 55.1 28.8C53.3 28.8 51.6 29.4 50.3 30.4C48.9 27.9 46.3 26.3 43.3 26.3C42.3 26.3 41.3 26.5 40.5 26.8V17.5C40.5 13.1 36.9 9.5 32.5 9.5Z" stroke="#57F7FF" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M40.5 35.1V53.2M50.6 37.2V54.4M62.6 41.1V56.1M24.8 46.8L36.1 58.5" stroke="#FF4FD8" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M21 14L10 8M25 5L22 0M43 9L52 2" stroke="#00FF9D" stroke-width="3" stroke-linecap="round"/>
     </svg>
   </div>
 
-  <p class="fallback-note">WebGL could not initialize. The portfolio overlay remains available at the end of the scroll experience.</p>
+  <p class="fallback">WebGL or the CSS3D renderer could not initialize. Please verify CDN access and browser WebGL support.</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
   <script>
     (() => {
-      const canvas = document.getElementById('experience');
-      const overlay = document.getElementById('portfolio-overlay');
-      const progressFill = document.getElementById('progress-fill');
-      const chapterLabel = document.getElementById('chapter-label');
-      const cursor = document.getElementById('custom-cursor');
-      const cursorDot = cursor.querySelector('.dot');
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      if (!window.THREE || !window.gsap || !window.ScrollTrigger) {
+      const hasDependencies = window.THREE && THREE.CSS3DRenderer && window.gsap && window.ScrollTrigger;
+      if (!hasDependencies) {
         document.body.classList.add('no-webgl');
-        overlay.style.opacity = 1;
-        overlay.style.visibility = 'visible';
-        overlay.style.pointerEvents = 'auto';
         return;
       }
 
       gsap.registerPlugin(ScrollTrigger);
+
+      const canvas = document.getElementById('webgl');
+      const cssStage = document.getElementById('css3d-stage');
+      const progress = document.getElementById('progress');
+      const chapter = document.getElementById('chapter');
+      const cursor = document.getElementById('custom-cursor');
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x05070d);
+      scene.fog = new THREE.Fog(0x05070d, 8, 26);
+
+      const cssScene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.01, 90);
+      camera.position.set(-1.8, 2.45, 8.6);
+      camera.lookAt(0, 1.55, -2.15);
 
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -567,341 +264,364 @@
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.setClearColor(0x050913, 1);
+      renderer.physicallyCorrectLights = true;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.04;
 
-      const scene = new THREE.Scene();
-      scene.fog = new THREE.FogExp2(0x071120, 0.038);
+      const cssRenderer = new THREE.CSS3DRenderer();
+      cssRenderer.setSize(window.innerWidth, window.innerHeight);
+      cssRenderer.domElement.style.position = 'fixed';
+      cssRenderer.domElement.style.inset = '0';
+      cssRenderer.domElement.style.pointerEvents = 'none';
+      cssStage.appendChild(cssRenderer.domElement);
 
-      const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 120);
-      camera.position.set(0, 2.75, 10.5);
-      scene.add(camera);
-
-      const target = new THREE.Vector3(0, 1.3, 0);
-      const cameraRig = { x: 0, y: 2.75, z: 10.5, tx: 0, ty: 1.25, tz: -1.6, fov: 45 };
-
-      const palette = {
-        wall: 0x17263a,
-        floor: 0x0c1728,
-        trim: 0x2e4868,
-        desk: 0x815a3b,
-        deskDark: 0x4b3427,
-        chair: 0x2c3451,
-        skin: 0xd7a77f,
-        hair: 0x1a1620,
-        hoodie: 0x2b7fff,
-        pants: 0x242a3f,
-        shoe: 0x111725,
-        laptop: 0x0b1020,
-        laptopEdge: 0x7086a7,
-        glow: 0x52f3ff,
-        pink: 0xff68d8
+      const mat = {
+        wall: new THREE.MeshStandardMaterial({ color: 0x101722, roughness: 0.78, metalness: 0.08 }),
+        floor: new THREE.MeshStandardMaterial({ color: 0x080d15, roughness: 0.62, metalness: 0.28 }),
+        desk: new THREE.MeshStandardMaterial({ color: 0x151a21, roughness: 0.46, metalness: 0.42 }),
+        deskEdge: new THREE.MeshStandardMaterial({ color: 0x283849, roughness: 0.35, metalness: 0.62 }),
+        laptop: new THREE.MeshStandardMaterial({ color: 0x0d1118, roughness: 0.32, metalness: 0.72 }),
+        laptopEdge: new THREE.MeshStandardMaterial({ color: 0x68798d, roughness: 0.26, metalness: 0.86 }),
+        key: new THREE.MeshStandardMaterial({ color: 0x080b10, roughness: 0.58, metalness: 0.12 }),
+        emissiveCyan: new THREE.MeshStandardMaterial({ color: 0x57f7ff, emissive: 0x57f7ff, emissiveIntensity: 3.2, roughness: 0.18 }),
+        emissiveAcid: new THREE.MeshStandardMaterial({ color: 0x00ff9d, emissive: 0x00ff9d, emissiveIntensity: 2.8, roughness: 0.18 }),
+        screenGlass: new THREE.MeshStandardMaterial({ color: 0x05101a, emissive: 0x57f7ff, emissiveIntensity: 0.16, roughness: 0.18, metalness: 0.35, transparent: true, opacity: 0.55 })
       };
 
-      const mats = {
-        wall: new THREE.MeshStandardMaterial({ color: palette.wall, roughness: 0.9, metalness: 0.02 }),
-        floor: new THREE.MeshStandardMaterial({ color: palette.floor, roughness: 0.82, metalness: 0.03 }),
-        trim: new THREE.MeshStandardMaterial({ color: palette.trim, roughness: 0.75 }),
-        desk: new THREE.MeshStandardMaterial({ color: palette.desk, roughness: 0.7 }),
-        deskDark: new THREE.MeshStandardMaterial({ color: palette.deskDark, roughness: 0.8 }),
-        chair: new THREE.MeshStandardMaterial({ color: palette.chair, roughness: 0.72, metalness: 0.05 }),
-        skin: new THREE.MeshStandardMaterial({ color: palette.skin, roughness: 0.65 }),
-        hair: new THREE.MeshStandardMaterial({ color: palette.hair, roughness: 0.82 }),
-        hoodie: new THREE.MeshStandardMaterial({ color: palette.hoodie, roughness: 0.58 }),
-        pants: new THREE.MeshStandardMaterial({ color: palette.pants, roughness: 0.72 }),
-        shoe: new THREE.MeshStandardMaterial({ color: palette.shoe, roughness: 0.68 }),
-        laptop: new THREE.MeshStandardMaterial({ color: palette.laptop, roughness: 0.35, metalness: 0.28 }),
-        laptopEdge: new THREE.MeshStandardMaterial({ color: palette.laptopEdge, roughness: 0.28, metalness: 0.55 }),
-        screen: new THREE.MeshStandardMaterial({ color: palette.glow, emissive: palette.glow, emissiveIntensity: 1.55, roughness: 0.2, metalness: 0.1 }),
-        neonPink: new THREE.MeshStandardMaterial({ color: palette.pink, emissive: palette.pink, emissiveIntensity: 1.1 }),
-        white: new THREE.MeshStandardMaterial({ color: 0xf5fbff, roughness: 0.55 })
-      };
-
-      const lowPoly = (mesh) => {
+      const cast = (mesh) => {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         return mesh;
       };
 
-      const cube = (w, h, d, mat, x = 0, y = 0, z = 0) => {
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-        mesh.position.set(x, y, z);
-        return lowPoly(mesh);
+      const roundedShape = (width, height, radius) => {
+        const x = -width / 2;
+        const y = -height / 2;
+        const shape = new THREE.Shape();
+        shape.moveTo(x + radius, y);
+        shape.lineTo(x + width - radius, y);
+        shape.quadraticCurveTo(x + width, y, x + width, y + radius);
+        shape.lineTo(x + width, y + height - radius);
+        shape.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        shape.lineTo(x + radius, y + height);
+        shape.quadraticCurveTo(x, y + height, x, y + height - radius);
+        shape.lineTo(x, y + radius);
+        shape.quadraticCurveTo(x, y, x + radius, y);
+        return shape;
       };
 
-      const cyl = (rTop, rBottom, h, radial, mat, x = 0, y = 0, z = 0) => {
-        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBottom, h, radial), mat);
-        mesh.position.set(x, y, z);
-        return lowPoly(mesh);
+      const roundedSlab = (width, depth, height, radius, material, bevel = 0.035) => {
+        const geometry = new THREE.ExtrudeGeometry(roundedShape(width, depth, radius), {
+          depth: height,
+          bevelEnabled: true,
+          bevelSegments: 8,
+          bevelSize: bevel,
+          bevelThickness: bevel,
+          curveSegments: 18
+        });
+        geometry.center();
+        geometry.rotateX(Math.PI / 2);
+        return cast(new THREE.Mesh(geometry, material));
       };
 
-      const hemiLight = new THREE.HemisphereLight(0xb9ecff, 0x141423, 1.45);
-      scene.add(hemiLight);
+      const roundedPanel = (width, height, depth, radius, material, bevel = 0.025) => {
+        const geometry = new THREE.ExtrudeGeometry(roundedShape(width, height, radius), {
+          depth,
+          bevelEnabled: true,
+          bevelSegments: 8,
+          bevelSize: bevel,
+          bevelThickness: bevel,
+          curveSegments: 18
+        });
+        geometry.center();
+        return cast(new THREE.Mesh(geometry, material));
+      };
 
-      const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
-      keyLight.position.set(-3.5, 7.5, 5.5);
+      const hemi = new THREE.HemisphereLight(0x9edcff, 0x080a12, 1.1);
+      scene.add(hemi);
+
+      const keyLight = new THREE.SpotLight(0xd6f5ff, 90, 28, Math.PI / 5.6, 0.55, 1.35);
+      keyLight.position.set(-2.7, 6.2, 3.8);
+      keyLight.target.position.set(0, 1.2, -2.2);
       keyLight.castShadow = true;
       keyLight.shadow.mapSize.set(2048, 2048);
-      keyLight.shadow.camera.near = 0.5;
-      keyLight.shadow.camera.far = 24;
-      keyLight.shadow.camera.left = -9;
-      keyLight.shadow.camera.right = 9;
-      keyLight.shadow.camera.top = 9;
-      keyLight.shadow.camera.bottom = -9;
-      scene.add(keyLight);
+      keyLight.shadow.bias = -0.00008;
+      scene.add(keyLight, keyLight.target);
 
-      const screenLight = new THREE.PointLight(palette.glow, 2.4, 8, 1.7);
-      screenLight.position.set(1.55, 1.45, -1.8);
+      const rimLight = new THREE.SpotLight(0xa855f7, 38, 22, Math.PI / 6, 0.6, 1.45);
+      rimLight.position.set(3.8, 4.5, -6.2);
+      rimLight.target.position.set(0, 1.4, -2.3);
+      scene.add(rimLight, rimLight.target);
+
+      const screenLight = new THREE.PointLight(0x57f7ff, 0, 8.5, 1.8);
+      screenLight.position.set(0, 2.35, -2.02);
       scene.add(screenLight);
 
       const room = new THREE.Group();
+      const floor = cast(new THREE.Mesh(new THREE.PlaneGeometry(18, 24, 48, 48), mat.floor));
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.z = -2;
+      room.add(floor);
+
+      const backWall = cast(new THREE.Mesh(new THREE.PlaneGeometry(18, 7, 48, 20), mat.wall));
+      backWall.position.set(0, 3.5, -8);
+      room.add(backWall);
+
+      const leftWall = cast(new THREE.Mesh(new THREE.PlaneGeometry(24, 7, 48, 20), mat.wall));
+      leftWall.rotation.y = Math.PI / 2;
+      leftWall.position.set(-9, 3.5, -2);
+      room.add(leftWall);
+
+      const rightWall = cast(new THREE.Mesh(new THREE.PlaneGeometry(24, 7, 48, 20), mat.wall));
+      rightWall.rotation.y = -Math.PI / 2;
+      rightWall.position.set(9, 3.5, -2);
+      room.add(rightWall);
       scene.add(room);
 
-      const floor = cube(9, 0.18, 9.4, mats.floor, 0, -0.09, -1.2);
-      const backWall = cube(9, 4.8, 0.22, mats.wall, 0, 2.3, -5.85);
-      const leftWall = cube(0.22, 4.8, 9.4, mats.wall, -4.5, 2.3, -1.2);
-      const rightWall = cube(0.22, 4.8, 9.4, mats.wall, 4.5, 2.3, -1.2);
-      const ceilingTrim = cube(9.2, 0.18, 0.26, mats.trim, 0, 4.68, -5.68);
-      room.add(floor, backWall, leftWall, rightWall, ceilingTrim);
-
-      for (let i = -4; i <= 4; i++) {
-        const plank = cube(0.025, 0.015, 9.2, mats.trim, i, 0.02, -1.2);
-        plank.material = mats.trim;
-        plank.receiveShadow = false;
-        room.add(plank);
-      }
-
-      const doorFrame = new THREE.Group();
-      doorFrame.position.set(-2.95, 1.65, 3.35);
-      doorFrame.add(cube(0.22, 3.3, 0.22, mats.trim, -0.9, 0, 0));
-      doorFrame.add(cube(0.22, 3.3, 0.22, mats.trim, 0.9, 0, 0));
-      doorFrame.add(cube(2.04, 0.22, 0.22, mats.trim, 0, 1.54, 0));
-      scene.add(doorFrame);
+      const stripGeo = new THREE.BoxGeometry(0.055, 0.035, 13.5, 8, 1, 36);
+      const leftStrip = new THREE.Mesh(stripGeo, mat.emissiveAcid);
+      leftStrip.position.set(-1.15, 0.028, -1.3);
+      const rightStrip = leftStrip.clone();
+      rightStrip.position.x = 1.15;
+      scene.add(leftStrip, rightStrip);
 
       const desk = new THREE.Group();
-      desk.position.set(1.6, 0, -3.35);
-      desk.rotation.y = -0.12;
-      desk.add(cube(3.25, 0.22, 1.35, mats.desk, 0, 1.14, 0));
-      [[-1.42, 0.55, -0.5], [1.42, 0.55, -0.5], [-1.42, 0.55, 0.5], [1.42, 0.55, 0.5]].forEach(([x, y, z]) => desk.add(cube(0.18, 1.1, 0.18, mats.deskDark, x, y, z)));
-      desk.add(cube(1.08, 0.42, 0.18, mats.deskDark, -0.7, 0.86, 0.62));
-      desk.add(cube(1.08, 0.42, 0.18, mats.deskDark, 0.72, 0.86, 0.62));
+      const deskTop = roundedSlab(6.4, 2.55, 0.22, 0.22, mat.desk, 0.045);
+      deskTop.position.set(0, 1.25, -2.2);
+      desk.add(deskTop);
+      const deskBevel = roundedSlab(6.65, 2.75, 0.08, 0.26, mat.deskEdge, 0.035);
+      deskBevel.position.set(0, 1.40, -2.2);
+      desk.add(deskBevel);
+      const legGeo = new THREE.CylinderGeometry(0.065, 0.09, 1.25, 24);
+      [[-2.85, -1.15], [2.85, -1.15], [-2.85, 1.15], [2.85, 1.15]].forEach(([x, z]) => {
+        const leg = cast(new THREE.Mesh(legGeo, mat.deskEdge));
+        leg.position.set(x, 0.65, -2.2 + z);
+        desk.add(leg);
+      });
       scene.add(desk);
 
-      const chair = new THREE.Group();
-      chair.position.set(1.55, 0, -1.62);
-      chair.rotation.y = Math.PI;
-      chair.add(cube(1.1, 0.24, 1.02, mats.chair, 0, 0.72, 0));
-      chair.add(cube(1.08, 1.25, 0.22, mats.chair, 0, 1.42, 0.48));
-      [[-0.42, 0.34, -0.34], [0.42, 0.34, -0.34], [-0.42, 0.34, 0.34], [0.42, 0.34, 0.34]].forEach(([x, y, z]) => chair.add(cube(0.13, 0.68, 0.13, mats.trim, x, y, z)));
-      scene.add(chair);
-
       const laptop = new THREE.Group();
-      laptop.position.set(1.72, 1.29, -3.12);
-      laptop.rotation.y = -0.12;
-      const base = cube(1.35, 0.08, 0.86, mats.laptop, 0, 0, 0);
-      const trackpad = cube(0.38, 0.012, 0.2, mats.laptopEdge, 0, 0.05, 0.22);
-      const keys = new THREE.Group();
-      for (let row = 0; row < 3; row++) {
-        for (let col = 0; col < 8; col++) {
-          keys.add(cube(0.105, 0.014, 0.055, mats.laptopEdge, -0.44 + col * 0.125, 0.055, -0.24 + row * 0.09));
-        }
-      }
-      const screenPivot = new THREE.Group();
-      screenPivot.position.set(0, 0.035, -0.43);
-      screenPivot.rotation.x = 0.05;
-      const screenBack = cube(1.34, 0.82, 0.07, mats.laptop, 0, 0.42, 0);
-      const screenGlow = cube(1.16, 0.65, 0.018, mats.screen, 0, 0.43, 0.043);
-      screenGlow.castShadow = false;
-      screenPivot.add(screenBack, screenGlow);
-      laptop.add(base, trackpad, keys, screenPivot);
+      laptop.position.set(0, 1.55, -2.18);
       scene.add(laptop);
 
-      const avatar = new THREE.Group();
-      avatar.position.set(-2.95, 0, 3.08);
-      avatar.rotation.y = -0.15;
-      scene.add(avatar);
+      const base = roundedSlab(4.95, 3.05, 0.13, 0.18, mat.laptop, 0.025);
+      laptop.add(base);
+      const baseLip = roundedSlab(5.1, 3.18, 0.045, 0.2, mat.laptopEdge, 0.018);
+      baseLip.position.y = 0.088;
+      laptop.add(baseLip);
 
-      const hips = new THREE.Group();
-      hips.position.y = 0.98;
-      avatar.add(hips);
-      const torso = cube(0.72, 0.9, 0.42, mats.hoodie, 0, 0.55, 0);
-      torso.rotation.x = -0.04;
-      hips.add(torso);
-      const neck = cube(0.22, 0.16, 0.2, mats.skin, 0, 1.1, 0);
-      const head = cyl(0.36, 0.34, 0.48, 8, mats.skin, 0, 1.42, 0);
-      head.rotation.y = Math.PI / 8;
-      const hair = cyl(0.39, 0.34, 0.22, 8, mats.hair, 0, 1.72, -0.02);
-      const fringe = cube(0.42, 0.16, 0.16, mats.hair, -0.06, 1.58, 0.24);
-      hips.add(neck, head, hair, fringe);
+      const trackpad = roundedSlab(1.2, 0.74, 0.018, 0.08, mat.laptopEdge, 0.012);
+      trackpad.position.set(0, 0.172, 0.72);
+      laptop.add(trackpad);
 
-      const leftArm = new THREE.Group();
-      const rightArm = new THREE.Group();
-      leftArm.position.set(-0.46, 0.88, 0);
-      rightArm.position.set(0.46, 0.88, 0);
-      leftArm.add(cube(0.18, 0.72, 0.2, mats.hoodie, 0, -0.34, 0));
-      rightArm.add(cube(0.18, 0.72, 0.2, mats.hoodie, 0, -0.34, 0));
-      const rightHand = cube(0.2, 0.18, 0.2, mats.skin, 0, -0.78, 0);
-      const leftHand = cube(0.2, 0.18, 0.2, mats.skin, 0, -0.78, 0);
-      rightArm.add(rightHand);
-      leftArm.add(leftHand);
-      leftArm.rotation.z = 0.15;
-      rightArm.rotation.z = -0.15;
-      hips.add(leftArm, rightArm);
-
-      const leftLeg = new THREE.Group();
-      const rightLeg = new THREE.Group();
-      leftLeg.position.set(-0.22, 0.1, 0);
-      rightLeg.position.set(0.22, 0.1, 0);
-      leftLeg.add(cube(0.22, 0.9, 0.24, mats.pants, 0, -0.45, 0));
-      rightLeg.add(cube(0.22, 0.9, 0.24, mats.pants, 0, -0.45, 0));
-      leftLeg.add(cube(0.32, 0.16, 0.42, mats.shoe, 0, -0.96, 0.08));
-      rightLeg.add(cube(0.32, 0.16, 0.42, mats.shoe, 0, -0.96, 0.08));
-      hips.add(leftLeg, rightLeg);
-
-      const decor = new THREE.Group();
-      scene.add(decor);
-      for (let i = 0; i < 26; i++) {
-        const size = 0.05 + Math.random() * 0.09;
-        const star = cube(size, size, size, mats.screen, -4.15 + Math.random() * 8.3, 0.35 + Math.random() * 3.7, -5.7 + Math.random() * 0.08);
-        star.castShadow = false;
-        star.receiveShadow = false;
-        decor.add(star);
+      const keyGeo = new THREE.BoxGeometry(0.25, 0.026, 0.18, 5, 1, 4);
+      for (let row = 0; row < 4; row++) {
+        for (let col = 0; col < 13; col++) {
+          const key = cast(new THREE.Mesh(keyGeo, mat.key));
+          key.position.set((col - 6) * 0.31 + (row % 2) * 0.045, 0.176, -0.75 + row * 0.25);
+          laptop.add(key);
+        }
       }
-      const shelf = cube(1.9, 0.12, 0.26, mats.trim, -2.15, 2.85, -5.62);
-      const books = new THREE.Group();
-      books.position.set(-2.68, 3.04, -5.43);
-      [0x52f3ff, 0xff68d8, 0x9a6bff, 0xf2c66d].forEach((color, i) => {
-        const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.64, emissive: color, emissiveIntensity: 0.08 });
-        books.add(cube(0.16, 0.46 + i * 0.04, 0.22, mat, i * 0.2, 0, 0));
-      });
-      decor.add(shelf, books);
 
-      const setCamera = () => {
-        camera.position.set(cameraRig.x, cameraRig.y, cameraRig.z);
-        target.set(cameraRig.tx, cameraRig.ty, cameraRig.tz);
-        camera.fov = cameraRig.fov;
+      const hingeGeo = new THREE.CylinderGeometry(0.075, 0.075, 4.78, 32);
+      const hinge = cast(new THREE.Mesh(hingeGeo, mat.laptopEdge));
+      hinge.rotation.z = Math.PI / 2;
+      hinge.position.set(0, 0.14, -1.46);
+      laptop.add(hinge);
+
+      const screenPivot = new THREE.Group();
+      screenPivot.position.set(0, 0.14, -1.46);
+      screenPivot.rotation.x = -1.5;
+      laptop.add(screenPivot);
+
+      const lidBack = roundedPanel(5.12, 3.18, 0.12, 0.20, mat.laptop, 0.025);
+      lidBack.position.set(0, 1.56, -0.08);
+      screenPivot.add(lidBack);
+
+      const screenGlowPlane = new THREE.Mesh(new THREE.PlaneGeometry(4.72, 2.84, 32, 18), mat.screenGlass);
+      screenGlowPlane.position.set(0, 1.56, 0.005);
+      screenPivot.add(screenGlowPlane);
+
+      const cameraStatus = { x: -1.8, y: 2.45, z: 8.6, tx: 0, ty: 1.45, tz: -2.15, fov: 48, sway: 0 };
+      const pointer = { x: 0, y: 0 };
+      const chapters = ['00 / ENTERING ROOM', '01 / APPROACHING DESK', '02 / SITTING DOWN', '03 / OPENING LAPTOP', '04 / DIVING INTO SCREEN'];
+
+      const screenElement = document.createElement('div');
+      screenElement.className = 'screen-ui font-space';
+      screenElement.innerHTML = `
+        <main class="relative min-h-full p-10 md:p-12">
+          <section class="glass-card rounded-[2rem] p-8 md:p-10 mb-8">
+            <p class="font-code text-acid tracking-[0.35em] text-sm uppercase mb-5">portfolio://akash-agarwal</p>
+            <h1 class="text-7xl md:text-8xl font-bold leading-[0.85] tracking-[-0.08em] bg-gradient-to-r from-white via-cyanx to-plasma bg-clip-text text-transparent">AKASH<br/>AGARWAL</h1>
+            <p class="mt-7 text-3xl leading-snug text-white/86">B.Tech in AI &amp; ML Student | ML Developer Intern @ Infiltrix | Competitive Programmer</p>
+            <p class="mt-6 text-2xl leading-relaxed text-white/68">Proficient in Python, C++, React, and Next.js. Experienced in developing scalable, user-centric applications and intelligent systems.</p>
+          </section>
+
+          <div class="grid grid-cols-1 xl:grid-cols-[1.04fr_.96fr] gap-8">
+            <section class="glass-card rounded-[2rem] p-8">
+              <h2 class="font-code text-cyanx tracking-[0.25em] text-sm uppercase mb-6">Experience &amp; Achievements</h2>
+              <ul class="space-y-5 text-xl leading-relaxed text-white/76">
+                <li><span class="text-acid">✦</span> <strong class="text-white">ML Development Intern @ Infiltrix:</strong> Optimized production-grade systems, achieving a 30% reduction in prediction latency and enhancing model accuracy by 15%.</li>
+                <li><span class="text-acid">✦</span> <strong class="text-white">Top 100 Contributor @ Social Summer of Code (SSoC):</strong> Contributed to open-source with 4 merged PRs.</li>
+                <li><span class="text-acid">✦</span> Tech Organizer @ KIIT FEST 9.0: "Code Kurukshetra"</li>
+                <li><span class="text-acid">✦</span> Web Dev &amp; CP Trainee @ AlgoZenith KIIT Chapter</li>
+                <li><span class="text-acid">✦</span> Built timetable optimization system for 1000+ students.</li>
+              </ul>
+            </section>
+
+            <section class="glass-card rounded-[2rem] p-8">
+              <h2 class="font-code text-cyanx tracking-[0.25em] text-sm uppercase mb-6">Skills Stack</h2>
+              <div class="grid gap-4 text-lg text-white/74">
+                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Programming</h3><p>Python, C++, Java, JavaScript, React.js, Next.js, Node.js, FastAPI</p></div>
+                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Database &amp; Cloud</h3><p>MySQL, MongoDB, Firebase, AWS</p></div>
+                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Core</h3><p>Data Structures &amp; Algorithms, OOP, Machine Learning</p></div>
+                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Tools</h3><p>Git, Docker, Postman, Linux</p></div>
+              </div>
+            </section>
+          </div>
+
+          <section class="glass-card rounded-[2rem] p-8 mt-8 mb-8">
+            <h2 class="font-code text-cyanx tracking-[0.25em] text-sm uppercase mb-6">Highlighted Projects</h2>
+            <div class="grid xl:grid-cols-2 gap-6">
+              <article class="chip rounded-3xl p-6">
+                <h3 class="text-3xl font-bold text-white">CodeFlowViz-2.0</h3>
+                <p class="mt-3 text-xl leading-relaxed text-white/72">Interactive code visualization platform.</p>
+                <div class="mt-6 flex flex-wrap gap-3 font-code text-base">
+                  <a class="screen-link" data-clickable href="https://code-flow-viz-2-0-frontend.vercel.app/" target="_blank" rel="noreferrer"><i class="fa-solid fa-rocket"></i> Live Demo</a>
+                  <a class="screen-link" data-clickable href="https://github.com/kauntiaakash2/CodeFlowViz-2.0" target="_blank" rel="noreferrer"><i class="fa-brands fa-github"></i> GitHub</a>
+                </div>
+              </article>
+              <article class="chip rounded-3xl p-6">
+                <h3 class="text-3xl font-bold text-white">FinVerify AI</h3>
+                <p class="mt-3 text-xl leading-relaxed text-white/72">Low-latency multi-source data pipeline leveraging yfinance and FMP, achieving under 2s response time and 57% verification accuracy. Tech: React, FastAPI, Python, Scikit-learn, MongoDB.</p>
+              </article>
+            </div>
+          </section>
+
+          <footer class="terminal-dock -mx-10 md:-mx-12 -mb-10 md:-mb-12 p-6 md:p-8 font-code">
+            <p class="terminal-line text-white/70 mb-5">contact --mode=instant</p>
+            <div class="grid grid-cols-2 xl:grid-cols-6 gap-3 text-sm">
+              <a class="screen-link" data-clickable href="tel:+919060245158" target="_blank"><i class="fa-solid fa-phone"></i> Phone</a>
+              <a class="screen-link" data-clickable href="mailto:akashkauntia2006@gmail.com" target="_blank"><i class="fa-solid fa-envelope"></i> Email</a>
+              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
+              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
+              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-solid fa-code"></i> CodeChef · 2 STAR - 1465</a>
+              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-solid fa-terminal"></i> Codeforces · 915</a>
+            </div>
+          </footer>
+        </main>`;
+
+      const cssScreenPivot = new THREE.Group();
+      cssScreenPivot.position.copy(laptop.position).add(screenPivot.position);
+      cssScreenPivot.rotation.x = screenPivot.rotation.x;
+      cssScene.add(cssScreenPivot);
+
+      const screenObject = new THREE.CSS3DObject(screenElement);
+      screenObject.position.set(0, 1.56, 0.012);
+      screenObject.scale.setScalar(4.72 / 1200);
+      cssScreenPivot.add(screenObject);
+
+      const applyCamera = () => {
+        const walkBob = Math.sin(cameraStatus.sway * Math.PI * 2) * 0.035;
+        camera.position.set(
+          cameraStatus.x + pointer.x * 0.045,
+          cameraStatus.y + walkBob + pointer.y * 0.035,
+          cameraStatus.z
+        );
+        camera.fov = cameraStatus.fov;
         camera.updateProjectionMatrix();
-        camera.lookAt(target);
+        camera.lookAt(
+          cameraStatus.tx + pointer.x * 0.10,
+          cameraStatus.ty + pointer.y * 0.07,
+          cameraStatus.tz
+        );
       };
 
-      const chapters = [
-        '00 / At the threshold',
-        '01 / Crossing the room',
-        '02 / Over the shoulder',
-        '03 / Screen awakening',
-        '04 / Portfolio unlocked'
-      ];
-
-      gsap.set(overlay, { autoAlpha: 0, y: 22, scale: 0.985 });
-      gsap.set(screenPivot.rotation, { x: 0.05 });
-      gsap.set(progressFill, { width: '0%' });
+      const setChapter = (self) => {
+        progress.style.width = `${self.progress * 100}%`;
+        const idx = Math.min(chapters.length - 1, Math.floor(self.progress * chapters.length));
+        chapter.textContent = chapters[idx];
+      };
 
       if (prefersReduced) {
-        cameraRig.x = 1.66; cameraRig.y = 1.46; cameraRig.z = -3.72;
-        cameraRig.tx = 1.66; cameraRig.ty = 1.72; cameraRig.tz = -3.49;
-        cameraRig.fov = 28;
-        screenPivot.rotation.x = -1.95;
-        avatar.position.set(1.55, 0.72, -1.58);
-        avatar.rotation.y = Math.PI;
-        rightArm.rotation.x = -1.2;
-        gsap.set(overlay, { autoAlpha: 1, y: 0, scale: 1 });
-        document.body.classList.add('portfolio-live');
+        cameraStatus.x = 0;
+        cameraStatus.y = 2.08;
+        cameraStatus.z = -0.13;
+        cameraStatus.tx = 0;
+        cameraStatus.ty = 2.72;
+        cameraStatus.tz = -3.64;
+        cameraStatus.fov = 30;
+        screenPivot.rotation.x = -0.08;
+        screenLight.intensity = 18;
+        progress.style.width = '100%';
+        chapter.textContent = chapters[chapters.length - 1];
       } else {
-        const story = gsap.timeline({
+        gsap.timeline({
           defaults: { ease: 'none' },
           scrollTrigger: {
             trigger: document.body,
             start: 'top top',
             end: 'bottom bottom',
-            scrub: 1.15,
-            onUpdate: (self) => {
-              gsap.set(progressFill, { width: `${self.progress * 100}%` });
-              const idx = Math.min(chapters.length - 1, Math.floor(self.progress * chapters.length));
-              chapterLabel.textContent = chapters[idx];
-              document.body.classList.toggle('portfolio-live', self.progress > 0.965);
-            }
+            scrub: 1.1,
+            onUpdate: setChapter
           }
-        });
-
-        story
-          .to(avatar.position, { x: 1.3, z: -1.18, duration: 0.25 }, 0)
-          .to(avatar.rotation, { y: Math.PI * 0.82, duration: 0.25 }, 0)
-          .to(leftLeg.rotation, { x: -0.22, duration: 0.09, yoyo: true, repeat: 2 }, 0.02)
-          .to(rightLeg.rotation, { x: 0.22, duration: 0.09, yoyo: true, repeat: 2 }, 0.02)
-          .to(cameraRig, { x: -1.2, y: 2.38, z: 6.2, tx: 0.45, ty: 1.3, tz: -1.8, fov: 42, duration: 0.25, onUpdate: setCamera }, 0)
-
-          .to(avatar.position, { x: 1.55, y: 0.7, z: -1.54, duration: 0.25 }, 0.25)
-          .to(avatar.rotation, { y: Math.PI, duration: 0.25 }, 0.25)
-          .to(hips.rotation, { x: -0.12, duration: 0.25 }, 0.25)
-          .to(leftLeg.rotation, { x: -1.22, z: 0.08, duration: 0.25 }, 0.25)
-          .to(rightLeg.rotation, { x: -1.22, z: -0.08, duration: 0.25 }, 0.25)
-          .to(leftArm.rotation, { x: -0.45, z: 0.22, duration: 0.25 }, 0.25)
-          .to(rightArm.rotation, { x: -0.55, z: -0.2, duration: 0.25 }, 0.25)
-          .to(cameraRig, { x: 0.18, y: 2.35, z: 1.1, tx: 1.68, ty: 1.32, tz: -3.0, fov: 38, duration: 0.25, onUpdate: setCamera }, 0.25)
-
-          .to(rightArm.rotation, { x: -1.36, y: -0.2, z: -0.42, duration: 0.18 }, 0.52)
-          .to(leftArm.rotation, { x: -0.95, y: 0.14, z: 0.32, duration: 0.18 }, 0.55)
-          .to(screenPivot.rotation, { x: -1.95, duration: 0.25, ease: 'power2.inOut' }, 0.5)
-          .to(mats.screen, { emissiveIntensity: 3.2, duration: 0.25 }, 0.5)
-          .to(screenLight, { intensity: 5.6, distance: 10, duration: 0.25 }, 0.5)
-          .to(cameraRig, { x: 1.06, y: 1.95, z: -0.92, tx: 1.68, ty: 1.68, tz: -3.45, fov: 32, duration: 0.25, onUpdate: setCamera }, 0.5)
-
-          .to(cameraRig, { x: 1.66, y: 1.46, z: -3.72, tx: 1.66, ty: 1.72, tz: -3.49, fov: 15, duration: 0.25, onUpdate: setCamera }, 0.75)
-          .to('.vignette', { opacity: 0.28, duration: 0.16 }, 0.78)
-          .to(overlay, { autoAlpha: 1, y: 0, scale: 1, duration: 0.09, ease: 'power2.out' }, 0.91);
+        })
+          .to(cameraStatus, { x: -0.78, y: 2.22, z: 4.1, tx: -0.12, ty: 1.48, tz: -2.24, sway: 1, duration: 0.25 }, 0)
+          .to(cameraStatus, { x: 0, y: 1.64, z: 2.1, tx: 0, ty: 1.48, tz: -2.4, sway: 1.6, duration: 0.25 }, 0.25)
+          .to(cameraStatus, { x: 0, y: 1.82, z: 1.46, tx: 0, ty: 1.72, tz: -2.58, fov: 42, duration: 0.18 }, 0.42)
+          .to(screenPivot.rotation, { x: -0.08, duration: 0.25, ease: 'power2.inOut' }, 0.50)
+          .to(screenLight, { intensity: 18, duration: 0.20, ease: 'power2.out' }, 0.56)
+          .to(mat.screenGlass, { emissiveIntensity: 1.15, opacity: 0.38, duration: 0.20 }, 0.56)
+          .to(cameraStatus, { x: 0, y: 2.00, z: 0.55, tx: 0, ty: 2.54, tz: -3.48, fov: 34, duration: 0.16 }, 0.75)
+          .to(cameraStatus, { x: 0, y: 2.08, z: -0.13, tx: 0, ty: 2.72, tz: -3.64, fov: 30, duration: 0.09 }, 0.91);
       }
 
-      const clock = new THREE.Clock();
-      const render = () => {
-        const t = clock.getElapsedTime();
-        hips.position.y = 0.98 + Math.sin(t * 2.2) * 0.012;
-        screenGlow.scale.setScalar(1 + Math.sin(t * 4) * 0.008);
-        decor.rotation.y = Math.sin(t * 0.18) * 0.01;
-        setCamera();
-        renderer.render(scene, camera);
-        requestAnimationFrame(render);
-      };
-      render();
+      window.addEventListener('mousemove', (event) => {
+        pointer.x = (event.clientX / window.innerWidth - 0.5) * 2;
+        pointer.y = -(event.clientY / window.innerHeight - 0.5) * 2;
+      }, { passive: true });
 
-      const onResize = () => {
+      const cursorX = gsap.quickTo(cursor, 'x', { duration: 0.2, ease: 'power3.out' });
+      const cursorY = gsap.quickTo(cursor, 'y', { duration: 0.2, ease: 'power3.out' });
+      window.addEventListener('mousemove', (event) => {
+        cursorX(event.clientX);
+        cursorY(event.clientY);
+      }, { passive: true });
+      document.addEventListener('pointerover', (event) => {
+        if (event.target.closest('a, button, [data-clickable]')) cursor.classList.add('is-pointer');
+      });
+      document.addEventListener('pointerout', (event) => {
+        if (event.target.closest('a, button, [data-clickable]')) cursor.classList.remove('is-pointer');
+      });
+
+      const resize = () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         ScrollTrigger.refresh();
       };
-      window.addEventListener('resize', onResize);
+      window.addEventListener('resize', resize);
 
-      const cursorState = { x: window.innerWidth / 2, y: window.innerHeight / 2 };
-      const cursorQuickX = gsap.quickTo(cursor, 'x', { duration: 0.22, ease: 'power3.out' });
-      const cursorQuickY = gsap.quickTo(cursor, 'y', { duration: 0.22, ease: 'power3.out' });
+      const clock = new THREE.Clock();
+      const render = () => {
+        const elapsed = clock.getElapsedTime();
+        leftStrip.material.emissiveIntensity = 2.4 + Math.sin(elapsed * 2.4) * 0.35;
+        rightStrip.material.emissiveIntensity = 2.4 + Math.cos(elapsed * 2.2) * 0.35;
+        rimLight.intensity = 34 + Math.sin(elapsed * 1.1) * 4;
+        screenGlowPlane.material.emissiveIntensity = mat.screenGlass.emissiveIntensity + Math.sin(elapsed * 4.2) * 0.04;
 
-      window.addEventListener('mousemove', (event) => {
-        cursorState.x = event.clientX;
-        cursorState.y = event.clientY;
-        cursorQuickX(cursorState.x);
-        cursorQuickY(cursorState.y);
-      });
+        cssScreenPivot.position.copy(laptop.position).add(screenPivot.position);
+        cssScreenPivot.rotation.copy(laptop.rotation);
+        cssScreenPivot.rotation.x += screenPivot.rotation.x;
 
-      const activateCursor = () => {
-        cursor.classList.add('is-pointer');
-        gsap.to(cursor, { scale: 1.06, duration: 0.12, overwrite: true });
+        applyCamera();
+        renderer.render(scene, camera);
+        cssRenderer.render(cssScene, camera);
+        requestAnimationFrame(render);
       };
-
-      const deactivateCursor = () => {
-        cursor.classList.remove('is-pointer');
-        gsap.to(cursor, { scale: 1, duration: 0.16, overwrite: true });
-      };
-
-      document.addEventListener('pointerover', (event) => {
-        if (event.target.closest('#portfolio-overlay a, #portfolio-overlay button, #portfolio-overlay .project-card, #portfolio-overlay [data-interactive]')) activateCursor();
-      });
-
-      document.addEventListener('pointerout', (event) => {
-        if (event.target.closest('#portfolio-overlay a, #portfolio-overlay button, #portfolio-overlay .project-card, #portfolio-overlay [data-interactive]')) deactivateCursor();
-      });
-
-      document.addEventListener('mouseleave', () => gsap.to(cursorDot, { opacity: 0, duration: 0.12 }));
-      document.addEventListener('mouseenter', () => gsap.to(cursorDot, { opacity: 1, duration: 0.12 }));
+      render();
     })();
   </script>
 </body>
