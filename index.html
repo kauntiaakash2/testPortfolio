@@ -1,569 +1,233 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Akash Agarwal | Playable 3D Portfolio</title>
+  <title>Akash Agarwal - Playable 3D Portfolio</title>
   <style>
-    :root {
-      --bg: #07070d;
-      --fg: #d9f7ff;
-      --accent: #35f4ff;
-      --accent2: #ff3df2;
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#070b16; font-family:Arial,sans-serif; }
+    #ui {
+      position:fixed; top:12px; left:12px; z-index:10; color:#dff;
+      background:rgba(0,8,20,.72); border:1px solid #35f4ff88; border-radius:10px;
+      padding:10px 12px; box-shadow:0 0 18px #35f4ff33;
     }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: radial-gradient(circle at top, #101227 0%, #07070d 60%);
-      font-family: Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      color: var(--fg);
-    }
-
-    #app { width: 100vw; height: 100vh; }
-
-    .hud {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      padding: 12px 14px;
-      background: rgba(4, 8, 20, 0.72);
-      border: 1px solid rgba(53, 244, 255, 0.45);
-      border-radius: 10px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 0 18px rgba(53, 244, 255, 0.2), inset 0 0 18px rgba(53, 244, 255, 0.09);
-      z-index: 10;
-      line-height: 1.4;
-      max-width: 380px;
-      pointer-events: none;
-    }
-
-    .hud b { color: var(--accent); }
-
-    .crosshair {
-      position: fixed;
-      width: 14px;
-      height: 14px;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      border: 1px solid rgba(255, 255, 255, 0.65);
-      border-radius: 50%;
-      z-index: 8;
-      pointer-events: none;
-      opacity: 0.6;
-    }
+    #ui b { color:#35f4ff; }
   </style>
+  <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+      "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+    }
+  }
+  </script>
 </head>
 <body>
-  <div id="app"></div>
-  <div class="hud">
-    <div><b>Use WASD / Arrow Keys</b> to Drive</div>
-    <div>Click glowing buttons and links on billboards.</div>
-    <div>Cyber-Rover Portfolio: <b>Akash Agarwal</b></div>
-  </div>
-  <div class="crosshair"></div>
+  <div id="ui"><b>Use WASD / Arrow Keys</b> to Drive · Click neon pads to open links</div>
 
   <script type="module">
-    import * as THREE from 'https://unpkg.com/three@0.164.1/build/three.module.js';
-    import { OrbitControls } from 'https://unpkg.com/three@0.164.1/examples/jsm/controls/OrbitControls.js';
-    import * as CANNON from 'https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js';
-
-    const app = document.getElementById('app');
+    import * as THREE from 'three';
+    import * as CANNON from 'cannon-es';
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0x07070d, 45, 210);
+    scene.fog = new THREE.Fog(0x070b16, 50, 260);
 
-    const camera = new THREE.PerspectiveCamera(62, window.innerWidth / window.innerHeight, 0.1, 500);
-    camera.position.set(22, 24, 22);
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 500);
+    camera.position.set(18, 20, 18);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    app.appendChild(renderer.domElement);
+    document.body.appendChild(renderer.domElement);
 
-    // Optional control for debugging (disabled by default)
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enabled = false;
+    scene.add(new THREE.AmbientLight(0x7db3d1, 0.45));
+    const dl = new THREE.DirectionalLight(0x9bd6ff, 1.2);
+    dl.position.set(20, 30, 10);
+    scene.add(dl);
+    const glow = new THREE.PointLight(0xff4bf4, 1.8, 140);
+    glow.position.set(0, 14, 0);
+    scene.add(glow);
 
-    // Lights
-    scene.add(new THREE.AmbientLight(0x4c6d8f, 0.55));
-
-    const keyLight = new THREE.DirectionalLight(0x87d5ff, 1.2);
-    keyLight.position.set(18, 28, 12);
-    scene.add(keyLight);
-
-    const rimLight = new THREE.PointLight(0xff3df2, 1.8, 120);
-    rimLight.position.set(0, 20, 0);
-    scene.add(rimLight);
-
-    // Physics world
     const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
     world.broadphase = new CANNON.SAPBroadphase(world);
-    world.allowSleep = true;
-    world.defaultContactMaterial.friction = 0.2;
-    world.defaultContactMaterial.restitution = 0.05;
+    world.defaultContactMaterial.friction = 0.35;
 
-    // Floor
-    const floorSize = 220;
-    const floorGeo = new THREE.PlaneGeometry(floorSize, floorSize);
-    const floorMat = new THREE.MeshStandardMaterial({ color: 0x0a0f18, roughness: 0.9, metalness: 0.1 });
-    const floorMesh = new THREE.Mesh(floorGeo, floorMat);
-    floorMesh.rotation.x = -Math.PI / 2;
-    floorMesh.receiveShadow = true;
-    scene.add(floorMesh);
+    const floorSize = 240;
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(floorSize, floorSize),
+      new THREE.MeshStandardMaterial({ color:0x090f1e, roughness:.95, metalness:.05 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
+    scene.add(new THREE.GridHelper(floorSize, 120, 0x35f4ff, 0x1d3a57));
 
-    const floorBody = new CANNON.Body({ mass: 0, shape: new CANNON.Plane() });
-    floorBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
-    world.addBody(floorBody);
+    const groundBody = new CANNON.Body({ mass:0, shape:new CANNON.Plane() });
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+    world.addBody(groundBody);
 
-    const grid = new THREE.GridHelper(floorSize, 110, 0x35f4ff, 0x16334a);
-    grid.position.y = 0.02;
-    grid.material.transparent = true;
-    grid.material.opacity = 0.45;
-    scene.add(grid);
-
-    // Utility: canvas text to texture
-    function createTextTexture({
-      lines = [], width = 1024, height = 512, title = '', subtitle = '',
-      bg = 'rgba(6,10,25,0.78)', stroke = '#35f4ff', titleColor = '#35f4ff', textColor = '#e7f7ff'
-    }) {
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = bg;
-      roundRect(ctx, 8, 8, width - 16, height - 16, 22, true, false);
-
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = stroke;
-      roundRect(ctx, 8, 8, width - 16, height - 16, 22, false, true);
-
-      const glow = ctx.createLinearGradient(0, 0, width, height);
-      glow.addColorStop(0, 'rgba(53,244,255,0.23)');
-      glow.addColorStop(1, 'rgba(255,61,242,0.15)');
-      ctx.fillStyle = glow;
-      roundRect(ctx, 14, 14, width - 28, height - 28, 18, true, false);
-
-      let y = 80;
-      if (title) {
-        ctx.fillStyle = titleColor;
-        ctx.font = '700 52px Arial';
-        ctx.fillText(title, 48, y);
-        y += 56;
-      }
-
-      if (subtitle) {
-        ctx.fillStyle = '#8de7ff';
-        ctx.font = '500 30px Arial';
-        ctx.fillText(subtitle, 48, y);
-        y += 46;
-      }
-
-      ctx.fillStyle = textColor;
-      ctx.font = '500 30px Arial';
-      for (const line of lines) {
-        ctx.fillText(line, 48, y);
-        y += 48;
-      }
-
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.needsUpdate = true;
-      return { tex, canvas };
+    function textTexture({title='', lines=[]}) {
+      const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+      const x = c.getContext('2d');
+      x.fillStyle = 'rgba(5,12,30,.85)'; x.fillRect(0,0,c.width,c.height);
+      x.strokeStyle = '#35f4ff'; x.lineWidth = 8; x.strokeRect(8,8,c.width-16,c.height-16);
+      x.fillStyle = '#35f4ff'; x.font = '700 56px Arial'; x.fillText(title, 40, 90);
+      x.fillStyle = '#e8f8ff'; x.font = '500 34px Arial';
+      let y = 150; for (const l of lines){ x.fillText(l, 40, y); y += 50; }
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
     }
 
-    function roundRect(ctx, x, y, w, h, r, fill, stroke) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-      if (fill) ctx.fill();
-      if (stroke) ctx.stroke();
-    }
-
-    const interactive = [];
-
-    function createBillboard({ pos, width = 12, height = 5.6, title, subtitle = '', lines = [], lookAt = new THREE.Vector3(0, 3, 0) }) {
-      const { tex } = createTextTexture({ title, subtitle, lines });
-      const mesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(width, height),
-        new THREE.MeshBasicMaterial({ map: tex, transparent: false, side: THREE.DoubleSide })
+    function billboard(x,z,title,lines){
+      const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(13,6.5),
+        new THREE.MeshBasicMaterial({ map:textTexture({title,lines}), side:THREE.DoubleSide })
       );
-      mesh.position.copy(pos);
-      mesh.lookAt(lookAt);
-      scene.add(mesh);
-      return mesh;
+      m.position.set(x,4.2,z);
+      m.lookAt(0,3,0);
+      scene.add(m);
     }
 
-    function createClickableButton({ label, pos, size = [3.2, 0.8, 3.2], url, color = 0x13d8ff }) {
-      const g = new THREE.BoxGeometry(...size);
-      const m = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.35, roughness: 0.35, metalness: 0.4 });
-      const mesh = new THREE.Mesh(g, m);
-      mesh.position.copy(pos);
-      scene.add(mesh);
-
-      const text = makeSmallLabel(label, 512, 220, '#0a1421', '#35f4ff');
-      const p = new THREE.Mesh(
-        new THREE.PlaneGeometry(size[0] * 0.95, size[2] * 0.7),
-        new THREE.MeshBasicMaterial({ map: text, transparent: true })
+    const interactives = [];
+    function button(label, x, z, url, color=0x12dbff){
+      const pad = new THREE.Mesh(
+        new THREE.BoxGeometry(5,0.8,3.2),
+        new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:.35, metalness:.35, roughness:.4 })
       );
-      p.position.set(pos.x, pos.y + size[1] / 2 + 0.02, pos.z);
-      p.rotation.x = -Math.PI / 2;
-      scene.add(p);
+      pad.position.set(x,0.45,z);
+      pad.userData.url = url;
+      scene.add(pad);
+      interactives.push(pad);
 
-      mesh.userData.url = url;
-      p.userData.url = url;
-      interactive.push(mesh, p);
-      return mesh;
+      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(4.6,1.2), new THREE.MeshBasicMaterial({ map:textTexture({title:label, lines:[]}), transparent:true }));
+      lbl.position.set(x,0.9,z); lbl.rotation.x = -Math.PI/2; lbl.userData.url = url; scene.add(lbl); interactives.push(lbl);
     }
 
-    function makeSmallLabel(text, w = 400, h = 180, bg = '#0f1d2e', fg = '#e8ffff') {
-      const c = document.createElement('canvas'); c.width = w; c.height = h;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
-      ctx.strokeStyle = '#35f4ff'; ctx.lineWidth = 6; ctx.strokeRect(6, 6, w - 12, h - 12);
-      ctx.fillStyle = fg; ctx.font = '700 34px Arial';
-      wrapText(ctx, text, 22, 72, w - 44, 40);
-      const t = new THREE.CanvasTexture(c);
-      t.colorSpace = THREE.SRGBColorSpace;
-      return t;
-    }
-
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-      const words = text.split(' ');
-      let line = '';
-      for (let n = 0; n < words.length; n++) {
-        const test = line + words[n] + ' ';
-        if (ctx.measureText(test).width > maxWidth && n > 0) {
-          ctx.fillText(line, x, y);
-          line = words[n] + ' ';
-          y += lineHeight;
-        } else line = test;
-      }
-      ctx.fillText(line, x, y);
-    }
-
-    // Vehicle physics body
-    const chassisShape = new CANNON.Box(new CANNON.Vec3(1.15, 0.35, 2.0));
-    const chassisBody = new CANNON.Body({ mass: 150 });
-    chassisBody.addShape(chassisShape);
-    chassisBody.position.set(0, 1.0, 0);
-    chassisBody.angularDamping = 0.4;
+    // Rover physics
+    const chassisBody = new CANNON.Body({ mass: 180 });
+    chassisBody.addShape(new CANNON.Box(new CANNON.Vec3(1.1,0.35,2.0)));
+    chassisBody.position.set(0,1,0);
+    chassisBody.angularDamping = 0.45;
     world.addBody(chassisBody);
 
-    const vehicle = new CANNON.RaycastVehicle({
-      chassisBody,
-      indexRightAxis: 0,
-      indexUpAxis: 1,
-      indexForwardAxis: 2
-    });
-
-    const wheelOptions = {
-      radius: 0.45,
-      directionLocal: new CANNON.Vec3(0, -1, 0),
-      suspensionStiffness: 35,
-      suspensionRestLength: 0.35,
-      frictionSlip: 4.5,
-      dampingRelaxation: 2.3,
-      dampingCompression: 4.4,
-      maxSuspensionForce: 100000,
-      rollInfluence: 0.01,
-      axleLocal: new CANNON.Vec3(-1, 0, 0),
-      chassisConnectionPointLocal: new CANNON.Vec3(1, 0, 1),
-      maxSuspensionTravel: 0.3,
-      customSlidingRotationalSpeed: -30,
-      useCustomSlidingRotationalSpeed: true
+    const vehicle = new CANNON.RaycastVehicle({ chassisBody, indexRightAxis:0, indexUpAxis:1, indexForwardAxis:2 });
+    const wOpt = {
+      radius: 0.44, directionLocal:new CANNON.Vec3(0,-1,0), axleLocal:new CANNON.Vec3(-1,0,0),
+      suspensionStiffness: 40, suspensionRestLength: 0.35, frictionSlip: 5, dampingRelaxation: 2.3,
+      dampingCompression: 4.4, maxSuspensionForce: 1e5, rollInfluence:0.01, maxSuspensionTravel:0.35
     };
-
-    const wheelPositions = [
-      [-1, 0, 1.4], [1, 0, 1.4],
-      [-1, 0, -1.4], [1, 0, -1.4]
-    ];
-    wheelPositions.forEach((p) => {
-      wheelOptions.chassisConnectionPointLocal = new CANNON.Vec3(p[0], p[1], p[2]);
-      vehicle.addWheel(wheelOptions);
-    });
+    [[-1,0,1.4],[1,0,1.4],[-1,0,-1.4],[1,0,-1.4]].forEach(p=>{ wOpt.chassisConnectionPointLocal = new CANNON.Vec3(...p); vehicle.addWheel(wOpt); });
     vehicle.addToWorld(world);
 
-    // Visual rover
-    const rover = new THREE.Group();
-    scene.add(rover);
-
-    const bodyMain = new THREE.Mesh(
-      new THREE.BoxGeometry(2.4, 0.8, 4.2),
-      new THREE.MeshStandardMaterial({ color: 0x0e2235, metalness: 0.75, roughness: 0.3, emissive: 0x0a1a2e, emissiveIntensity: 0.4 })
-    );
-    rover.add(bodyMain);
-
-    const canopy = new THREE.Mesh(
-      new THREE.BoxGeometry(1.7, 0.65, 1.8),
-      new THREE.MeshStandardMaterial({ color: 0x1e384c, metalness: 0.7, roughness: 0.25, emissive: 0x234d70, emissiveIntensity: 0.35 })
-    );
-    canopy.position.set(0, 0.65, 0.2);
-    rover.add(canopy);
-
-    const nose = new THREE.Mesh(
-      new THREE.BoxGeometry(2.0, 0.35, 0.7),
-      new THREE.MeshStandardMaterial({ color: 0x35f4ff, emissive: 0x35f4ff, emissiveIntensity: 0.8 })
-    );
-    nose.position.set(0, 0.15, 2.25);
-    rover.add(nose);
-
-    const wheelMeshes = [];
-    const wheelGeo = new THREE.CylinderGeometry(0.47, 0.47, 0.38, 18);
-    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x0b1118, metalness: 0.35, roughness: 0.7, emissive: 0x2bffff, emissiveIntensity: 0.35 });
-
-    for (let i = 0; i < vehicle.wheelInfos.length; i++) {
-      const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-      wheel.rotation.z = Math.PI / 2;
-      scene.add(wheel);
-      wheelMeshes.push(wheel);
-    }
+    const rover = new THREE.Group(); scene.add(rover);
+    rover.add(new THREE.Mesh(new THREE.BoxGeometry(2.4,.75,4.2), new THREE.MeshStandardMaterial({ color:0x13263b, metalness:.7, roughness:.3 })));
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(1.7,.6,1.8), new THREE.MeshStandardMaterial({ color:0x204666, emissive:0x1f5e86, emissiveIntensity:.3 }));
+    cab.position.y = .65; cab.position.z = .2; rover.add(cab);
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(2,.3,.6), new THREE.MeshStandardMaterial({ color:0x35f4ff, emissive:0x35f4ff, emissiveIntensity:.75 }));
+    nose.position.set(0,.15,2.2); rover.add(nose);
+    const wheelMeshes=[];
+    for(let i=0;i<4;i++){ const w = new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.36,16), new THREE.MeshStandardMaterial({ color:0x0a1018, emissive:0x35f4ff, emissiveIntensity:.25 })); w.rotation.z=Math.PI/2; scene.add(w); wheelMeshes.push(w); }
 
     // Obstacles
-    const obstacleMat = new CANNON.Material('obstacle');
-    const boxGeometry = new THREE.BoxGeometry(2, 2, 2);
-    const obstacleVisualMat = new THREE.MeshStandardMaterial({ color: 0x24344f, emissive: 0x0f1d35, emissiveIntensity: 0.3, roughness: 0.55 });
-
-    for (let i = 0; i < 24; i++) {
-      const sx = THREE.MathUtils.randFloat(1.2, 2.8);
-      const sy = THREE.MathUtils.randFloat(1.1, 3.0);
-      const sz = THREE.MathUtils.randFloat(1.2, 2.8);
-      const mesh = new THREE.Mesh(boxGeometry, obstacleVisualMat);
-      mesh.scale.set(sx, sy, sz);
-
-      const x = THREE.MathUtils.randFloatSpread(130);
-      const z = THREE.MathUtils.randFloatSpread(130);
-      mesh.position.set(x, sy / 2, z);
-      scene.add(mesh);
-
-      const shape = new CANNON.Box(new CANNON.Vec3(sx, sy, sz).scale(0.5));
-      const body = new CANNON.Body({ mass: THREE.MathUtils.randFloat(18, 45), material: obstacleMat, shape });
-      body.position.set(x, sy / 2, z);
-      body.angularDamping = 0.25;
-      body.linearDamping = 0.05;
-      body.threemesh = mesh;
-      world.addBody(body);
+    const boxGeo = new THREE.BoxGeometry(2,2,2);
+    for(let i=0;i<28;i++){
+      const sx = THREE.MathUtils.randFloat(1.2,2.7), sy = THREE.MathUtils.randFloat(1.1,3), sz = THREE.MathUtils.randFloat(1.2,2.7);
+      const mesh = new THREE.Mesh(boxGeo, new THREE.MeshStandardMaterial({ color:0x253b58, emissive:0x102038, emissiveIntensity:.25 }));
+      mesh.scale.set(sx,sy,sz);
+      const px = THREE.MathUtils.randFloatSpread(140), pz = THREE.MathUtils.randFloatSpread(140);
+      mesh.position.set(px, sy/2, pz); scene.add(mesh);
+      const body = new CANNON.Body({ mass: THREE.MathUtils.randFloat(15,40), shape:new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2)) });
+      body.position.set(px, sy/2, pz); body.mesh = mesh; world.addBody(body);
     }
 
-    // Portfolio zones
-    createBillboard({
-      pos: new THREE.Vector3(0, 4.2, -10),
-      title: 'AKASH AGARWAL',
-      subtitle: 'B.Tech in AI & ML | ML Developer Intern @ Infiltrix | Competitive Programmer',
-      lines: ['Drive around to explore my profile.'],
-      lookAt: new THREE.Vector3(0, 4, 0)
+    // Zones
+    billboard(0,-12,'AKASH AGARWAL',[
+      'B.Tech in AI & ML | ML Developer Intern @ Infiltrix',
+      'Competitive Programmer',
+      'Drive around to explore my profile.'
+    ]);
+    billboard(0,-62,'EXPERIENCE & ACHIEVEMENTS',[
+      '• ML Dev Intern @ Infiltrix - latency -30%, accuracy +15%',
+      '• SSoC Top 100 Contributor (4 merged PRs)',
+      '• Tech Organizer for Code Kurukshetra @ KIIT FEST 9.0',
+      '• Web Dev Domain @ AlgoZenith KIIT Chapter'
+    ]);
+    billboard(64,0,'FEATURED PROJECTS',[
+      '• CodeFlowViz-2.0 - Interactive code visualization',
+      '• FinVerify AI - React, FastAPI, Python, Scikit-learn'
+    ]);
+    button('Open CodeFlowViz App',58,8,'https://code-flow-viz-2-0-frontend.vercel.app/');
+    button('Open CodeFlowViz GitHub',66,8,'https://github.com/kauntiaakash2/CodeFlowViz-2.0',0xff3df2);
+
+    billboard(-64,0,'TECH STACK',['Python · C++ · React.js · Next.js · ML · FastAPI · MongoDB']);
+    ['Python','C++','React.js','Next.js','Machine Learning','FastAPI','MongoDB'].forEach((s,i)=>{
+      const a = i/7*Math.PI*2;
+      const cube = new THREE.Mesh(new THREE.BoxGeometry(2.1,2.1,2.1), new THREE.MeshStandardMaterial({ color:0x1f3148, emissive:0x226f96, emissiveIntensity:.2 }));
+      cube.position.set(-70+Math.cos(a)*8,2.2+(i%2)*.8,Math.sin(a)*8); scene.add(cube);
+      const label = new THREE.Mesh(new THREE.PlaneGeometry(2.3,.7), new THREE.MeshBasicMaterial({ map:textTexture({title:s,lines:[]}), transparent:true, side:THREE.DoubleSide }));
+      label.position.set(cube.position.x,cube.position.y+1.45,cube.position.z); label.lookAt(0,4,0); scene.add(label);
     });
 
-    createBillboard({
-      pos: new THREE.Vector3(0, 4.5, -60),
-      title: 'EXPERIENCE & ACHIEVEMENTS',
-      lines: [
-        '• ML Dev Intern @ Infiltrix - Reduced prediction latency by 30%, boosted accuracy by 15%.',
-        '• SSoC Top 100 Contributor (4 merged PRs).',
-        '• Tech Organizer for Code Kurukshetra @ KIIT FEST 9.0.',
-        '• Web Dev Domain @ AlgoZenith KIIT Chapter.'
-      ],
-      lookAt: new THREE.Vector3(0, 3, -40)
-    });
+    billboard(0,62,'INITIATE CONTACT',['Drive over or click pads to open links']);
+    button('Email: akashkauntia2006@gmail.com',-15,74,'mailto:akashkauntia2006@gmail.com');
+    button('LinkedIn',-5,79,'https://www.linkedin.com',0xff3df2);
+    button('GitHub',5,74,'https://github.com/kauntiaakash2');
+    button('CodeChef / Codeforces',15,79,'https://www.codechef.com',0xff3df2);
 
-    createBillboard({
-      pos: new THREE.Vector3(62, 4.5, 0),
-      title: 'FEATURED PROJECTS',
-      lines: [
-        '• CodeFlowViz-2.0 - Interactive code visualization.',
-        '• FinVerify AI - Low-latency financial verification using',
-        '  React, FastAPI, Python, Scikit-learn.'
-      ],
-      lookAt: new THREE.Vector3(40, 3, 0)
-    });
+    const keys = { f:0, b:0, l:0, r:0, brake:0 };
+    const map = { KeyW:'f',ArrowUp:'f',KeyS:'b',ArrowDown:'b',KeyA:'l',ArrowLeft:'l',KeyD:'r',ArrowRight:'r',Space:'brake' };
+    addEventListener('keydown',e=>{ if(map[e.code]) keys[map[e.code]]=1; });
+    addEventListener('keyup',e=>{ if(map[e.code]) keys[map[e.code]]=0; });
 
-    createClickableButton({
-      label: 'Open CodeFlowViz App',
-      pos: new THREE.Vector3(58, 0.55, 8),
-      url: 'https://code-flow-viz-2-0-frontend.vercel.app/',
-      color: 0x00e6ff
-    });
-    createClickableButton({
-      label: 'Open CodeFlowViz GitHub',
-      pos: new THREE.Vector3(66, 0.55, 8),
-      url: 'https://github.com/kauntiaakash2/CodeFlowViz-2.0',
-      color: 0xff3df2
-    });
-
-    createBillboard({
-      pos: new THREE.Vector3(-62, 4.4, 0),
-      title: 'TECH STACK',
-      lines: ['Explore floating cubes: Python, C++, React.js, Next.js,', 'Machine Learning, FastAPI, MongoDB'],
-      lookAt: new THREE.Vector3(-40, 4, 0)
-    });
-
-    const skills = ['Python', 'C++', 'React.js', 'Next.js', 'Machine Learning', 'FastAPI', 'MongoDB'];
-    skills.forEach((skill, i) => {
-      const bx = new THREE.Mesh(
-        new THREE.BoxGeometry(2.1, 2.1, 2.1),
-        new THREE.MeshStandardMaterial({ color: 0x1f3148, emissive: 0x1f678f, emissiveIntensity: 0.25, metalness: 0.25, roughness: 0.45 })
-      );
-      const angle = i / skills.length * Math.PI * 2;
-      bx.position.set(-68 + Math.cos(angle) * 8, 2 + (i % 2), Math.sin(angle) * 8);
-      scene.add(bx);
-
-      const lbl = new THREE.Mesh(
-        new THREE.PlaneGeometry(2.2, 0.85),
-        new THREE.MeshBasicMaterial({ map: makeSmallLabel(skill, 300, 120, '#081119', '#7af4ff'), transparent: true, side: THREE.DoubleSide })
-      );
-      lbl.position.set(bx.position.x, bx.position.y + 1.5, bx.position.z);
-      lbl.lookAt(new THREE.Vector3(0, 5, 0));
-      scene.add(lbl);
-    });
-
-    createBillboard({
-      pos: new THREE.Vector3(0, 4.3, 62),
-      title: 'INITIATE CONTACT',
-      lines: ['Drive over or click a terminal button to open links.'],
-      lookAt: new THREE.Vector3(0, 3, 40)
-    });
-
-    const contactButtons = [
-      { label: 'Email: akashkauntia2006@gmail.com', url: 'mailto:akashkauntia2006@gmail.com', x: -14 },
-      { label: 'LinkedIn', url: 'https://www.linkedin.com', x: -4.5 },
-      { label: 'GitHub', url: 'https://github.com/kauntiaakash2', x: 4.5 },
-      { label: 'CodeChef / Codeforces', url: 'https://www.codechef.com', x: 14 }
-    ];
-    contactButtons.forEach((b, i) => createClickableButton({ label: b.label, pos: new THREE.Vector3(b.x, 0.6, 74 + (i % 2) * 5), url: b.url, color: i % 2 ? 0x31b0ff : 0xff3df2 }));
-
-    // Driving input
-    const keys = { forward: false, back: false, left: false, right: false, brake: false };
-    const keyMap = {
-      KeyW: 'forward', ArrowUp: 'forward',
-      KeyS: 'back', ArrowDown: 'back',
-      KeyA: 'left', ArrowLeft: 'left',
-      KeyD: 'right', ArrowRight: 'right',
-      Space: 'brake'
-    };
-
-    window.addEventListener('keydown', (e) => { if (keyMap[e.code]) keys[keyMap[e.code]] = true; });
-    window.addEventListener('keyup', (e) => { if (keyMap[e.code]) keys[keyMap[e.code]] = false; });
-
-    const maxSteerVal = 0.48;
-    const maxForce = 1600;
-    const brakeForce = 42;
-
-    function updateDrive() {
-      const engineForce = keys.forward ? -maxForce : keys.back ? maxForce * 0.65 : 0;
-      vehicle.applyEngineForce(engineForce, 2);
-      vehicle.applyEngineForce(engineForce, 3);
-
-      const steer = keys.left ? maxSteerVal : keys.right ? -maxSteerVal : 0;
-      vehicle.setSteeringValue(steer, 0);
-      vehicle.setSteeringValue(steer, 1);
-
-      const br = keys.brake ? brakeForce : 0;
-      for (let i = 0; i < 4; i++) vehicle.setBrake(br, i);
+    function drive(){
+      const force = keys.f ? -1700 : keys.b ? 1100 : 0;
+      vehicle.applyEngineForce(force,2); vehicle.applyEngineForce(force,3);
+      const steer = keys.l ? 0.5 : keys.r ? -0.5 : 0;
+      vehicle.setSteeringValue(steer,0); vehicle.setSteeringValue(steer,1);
+      const br = keys.brake ? 50 : 0; for(let i=0;i<4;i++) vehicle.setBrake(br,i);
     }
 
-    // Click interactions
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
-    window.addEventListener('pointerdown', (e) => {
-      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const hits = raycaster.intersectObjects(interactive, false);
-      if (hits.length && hits[0].object.userData.url) window.open(hits[0].object.userData.url, '_blank');
+    const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
+    addEventListener('pointerdown',e=>{
+      mouse.x = e.clientX/innerWidth*2-1; mouse.y = -(e.clientY/innerHeight)*2+1;
+      raycaster.setFromCamera(mouse,camera);
+      const hit = raycaster.intersectObjects(interactives)[0];
+      if(hit?.object?.userData?.url) window.open(hit.object.userData.url,'_blank');
     });
 
-    // Camera follow
-    const followOffset = new THREE.Vector3(15, 20, 15);
     const camTarget = new THREE.Vector3();
-
-    function updateCamera(dt) {
-      const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(rover.quaternion).normalize();
-      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(rover.quaternion).normalize();
-      const dynamicOffset = new THREE.Vector3()
-        .addScaledVector(forward, 13)
-        .addScaledVector(right, 13)
-        .add(new THREE.Vector3(0, 16, 0));
-
-      camTarget.copy(rover.position);
-      const desired = new THREE.Vector3().copy(camTarget).add(dynamicOffset);
-      camera.position.lerp(desired, 1 - Math.pow(0.001, dt * 5));
-      camera.lookAt(camTarget.x, camTarget.y + 1.5, camTarget.z);
-    }
-
-    // Hover-open when rover drives over contact/project buttons
-    function autoTriggerByDistance() {
-      const roverPos = rover.position;
-      for (const obj of interactive) {
-        if (!obj.userData.url || !obj.geometry?.boundingSphere) continue;
-        const d = roverPos.distanceTo(obj.position);
-        if (d < 1.9 && !obj.userData.cooldown) {
-          obj.userData.cooldown = 180;
-          window.open(obj.userData.url, '_blank');
-        }
-        if (obj.userData.cooldown) obj.userData.cooldown--;
-      }
-    }
-
-    // Sync physics meshes
-    function syncBodies() {
-      world.bodies.forEach((b) => {
-        if (b.threemesh) {
-          b.threemesh.position.copy(b.position);
-          b.threemesh.quaternion.copy(b.quaternion);
-        }
-      });
+    const clock = new THREE.Clock();
+    let acc = 0, step = 1/60;
+    function animate(){
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), .05);
+      acc += dt;
+      drive();
+      while(acc >= step){ world.step(step); acc -= step; }
 
       rover.position.copy(chassisBody.position);
       rover.quaternion.copy(chassisBody.quaternion);
+      for(let i=0;i<4;i++){ vehicle.updateWheelTransform(i); wheelMeshes[i].position.copy(vehicle.wheelInfos[i].worldTransform.position); wheelMeshes[i].quaternion.copy(vehicle.wheelInfos[i].worldTransform.quaternion); }
+      world.bodies.forEach(b=>{ if(b.mesh){ b.mesh.position.copy(b.position); b.mesh.quaternion.copy(b.quaternion);} });
 
-      for (let i = 0; i < vehicle.wheelInfos.length; i++) {
-        vehicle.updateWheelTransform(i);
-        const t = vehicle.wheelInfos[i].worldTransform;
-        wheelMeshes[i].position.copy(t.position);
-        wheelMeshes[i].quaternion.copy(t.quaternion);
-      }
-    }
-
-    const clock = new THREE.Clock();
-    let accumulator = 0;
-    const fixedTimeStep = 1 / 60;
-
-    function animate() {
-      requestAnimationFrame(animate);
-      const dt = Math.min(clock.getDelta(), 0.05);
-      accumulator += dt;
-
-      updateDrive();
-      while (accumulator >= fixedTimeStep) {
-        world.step(fixedTimeStep);
-        accumulator -= fixedTimeStep;
+      for(const i of interactives){
+        if(i.userData.url && rover.position.distanceTo(i.position) < 1.9 && !i.userData.cool){ i.userData.cool = 160; window.open(i.userData.url,'_blank'); }
+        if(i.userData.cool) i.userData.cool--;
       }
 
-      syncBodies();
-      autoTriggerByDistance();
-      updateCamera(dt);
-      renderer.render(scene, camera);
-    }
+      const forward = new THREE.Vector3(0,0,1).applyQuaternion(rover.quaternion).normalize();
+      const right = new THREE.Vector3(1,0,0).applyQuaternion(rover.quaternion).normalize();
+      camTarget.copy(rover.position);
+      const desired = camTarget.clone().addScaledVector(forward,12).addScaledVector(right,12).add(new THREE.Vector3(0,15,0));
+      camera.position.lerp(desired, 0.08);
+      camera.lookAt(camTarget.x, camTarget.y+1.2, camTarget.z);
 
+      renderer.render(scene,camera);
+    }
     animate();
 
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+    addEventListener('resize',()=>{
+      camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
     });
   </script>
 </body>
