@@ -1,628 +1,234 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Akash Agarwal — first-person 3D laptop scrollytelling portfolio." />
-  <meta name="theme-color" content="#05070d" />
-  <title>Akash Agarwal | First-Person 3D Portfolio</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            space: ['Space Grotesk', 'sans-serif'],
-            code: ['Fira Code', 'monospace']
-          },
-          colors: {
-            acid: '#00ff9d',
-            cyanx: '#57f7ff',
-            plasma: '#a855f7',
-            void: '#05070d'
-          }
-        }
-      }
-    };
-  </script>
-
+  <title>Akash Agarwal - Playable 3D Portfolio</title>
   <style>
-    :root {
-      --bg: #05070d;
-      --cyan: #57f7ff;
-      --acid: #00ff9d;
-      --purple: #a855f7;
-      --pink: #ff4fd8;
-      --ink: #effaff;
+    html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#070b16; font-family:Arial,sans-serif; }
+    #ui {
+      position:fixed; top:12px; left:12px; z-index:10; color:#dff;
+      background:rgba(0,8,20,.72); border:1px solid #35f4ff88; border-radius:10px;
+      padding:10px 12px; box-shadow:0 0 18px #35f4ff33;
     }
-
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--ink); cursor: none; }
-    body {
-      min-height: 760vh;
-      overflow-x: hidden;
-      font-family: 'Space Grotesk', system-ui, sans-serif;
-    }
-    a, button, [data-clickable] { cursor: none; }
-    ::selection { background: var(--cyan); color: #031018; }
-
-    #webgl, #css3d-stage {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-    }
-    #webgl { z-index: 1; display: block; }
-    #css3d-stage { z-index: 2; pointer-events: none; overflow: hidden; }
-    #css3d-stage > div { pointer-events: none; }
-
-    .screen-ui {
-      width: 1200px;
-      height: 750px;
-      overflow: auto;
-      pointer-events: auto;
-      color: var(--ink);
-      background:
-        radial-gradient(circle at 12% 2%, rgba(0, 255, 157, 0.20), transparent 23rem),
-        radial-gradient(circle at 92% 15%, rgba(168, 85, 247, 0.24), transparent 25rem),
-        linear-gradient(145deg, rgba(5, 10, 22, 0.96), rgba(2, 6, 16, 0.93));
-      border: 1px solid rgba(87, 247, 255, 0.42);
-      border-radius: 34px;
-      box-shadow:
-        inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-        inset 0 0 80px rgba(87, 247, 255, 0.10),
-        0 0 48px rgba(87, 247, 255, 0.35);
-      transform-style: preserve-3d;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(87, 247, 255, 0.55) rgba(255, 255, 255, 0.08);
-    }
-    .screen-ui::-webkit-scrollbar { width: 10px; }
-    .screen-ui::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.07); }
-    .screen-ui::-webkit-scrollbar-thumb { background: linear-gradient(var(--cyan), var(--purple)); border-radius: 999px; }
-    .screen-ui a { pointer-events: auto; }
-
-    .glass-card {
-      border: 1px solid rgba(87, 247, 255, 0.22);
-      background: linear-gradient(145deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.045));
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 18px 55px rgba(0, 0, 0, 0.22);
-      backdrop-filter: blur(18px) saturate(150%);
-    }
-    .chip {
-      border: 1px solid rgba(87, 247, 255, 0.28);
-      background: rgba(87, 247, 255, 0.08);
-      box-shadow: inset 0 0 20px rgba(87, 247, 255, 0.08);
-    }
-    .screen-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.55rem;
-      border: 1px solid rgba(87, 247, 255, 0.34);
-      border-radius: 999px;
-      padding: 0.82rem 1rem;
-      color: var(--ink);
-      text-decoration: none;
-      background: linear-gradient(135deg, rgba(87, 247, 255, 0.12), rgba(168, 85, 247, 0.14));
-      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
-    }
-    .screen-link:hover, .screen-link:focus-visible {
-      transform: translateY(-3px);
-      border-color: rgba(0, 255, 157, 0.72);
-      background: linear-gradient(135deg, rgba(0, 255, 157, 0.18), rgba(87, 247, 255, 0.15));
-      box-shadow: 0 0 28px rgba(0, 255, 157, 0.16);
-      outline: none;
-    }
-    .terminal-dock {
-      position: sticky;
-      bottom: 0;
-      z-index: 10;
-      border-top: 1px solid rgba(87, 247, 255, 0.25);
-      background: rgba(2, 6, 16, 0.82);
-      backdrop-filter: blur(18px) saturate(150%);
-    }
-    .terminal-line::before { content: '$ '; color: var(--acid); }
-
-    .hud {
-      position: fixed;
-      left: clamp(1rem, 3vw, 2rem);
-      bottom: clamp(1rem, 3vw, 2rem);
-      z-index: 3;
-      pointer-events: none;
-      font-family: 'Fira Code', monospace;
-      color: rgba(239, 250, 255, 0.72);
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      font-size: 0.72rem;
-      text-shadow: 0 0 18px rgba(87, 247, 255, 0.65);
-    }
-    .progress-track { width: min(380px, 62vw); height: 1px; margin-top: 0.75rem; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
-    #progress { display: block; width: 0%; height: 100%; background: linear-gradient(90deg, var(--acid), var(--cyan), var(--purple), var(--pink)); box-shadow: 0 0 18px var(--cyan); }
-
-    #custom-cursor {
-      position: fixed;
-      left: 0;
-      top: 0;
-      z-index: 9999;
-      width: 18px;
-      height: 18px;
-      display: grid;
-      place-items: center;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      filter: drop-shadow(0 0 14px rgba(87, 247, 255, 0.95));
-    }
-    #custom-cursor .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: var(--cyan);
-      box-shadow: 0 0 16px var(--cyan), 0 0 38px rgba(87, 247, 255, 0.72);
-      transition: opacity 0.12s ease, transform 0.12s ease;
-    }
-    #custom-cursor svg {
-      position: absolute;
-      width: 54px;
-      height: 54px;
-      opacity: 0;
-      transform: translate(12px, 10px) rotate(-12deg) scale(0.55);
-      transform-origin: 34% 16%;
-      transition: opacity 0.12s ease, transform 0.12s ease;
-    }
-    #custom-cursor.is-pointer .dot { opacity: 0; transform: scale(0.1); }
-    #custom-cursor.is-pointer svg {
-      opacity: 1;
-      transform: translate(12px, 10px) rotate(-12deg) scale(1);
-      animation: handPulse 0.72s ease-in-out infinite alternate;
-    }
-    @keyframes handPulse {
-      from { filter: drop-shadow(0 0 10px rgba(87, 247, 255, 0.85)); }
-      to { filter: drop-shadow(0 0 26px rgba(255, 79, 216, 0.95)); transform: translate(12px, 10px) rotate(-12deg) scale(1.08); }
-    }
-
-    .fallback {
-      position: fixed;
-      right: 1rem;
-      bottom: 1rem;
-      z-index: 20;
-      max-width: 26rem;
-      display: none;
-      padding: 0.9rem 1rem;
-      border: 1px solid rgba(87, 247, 255, 0.36);
-      border-radius: 1rem;
-      color: rgba(239, 250, 255, 0.82);
-      background: rgba(5, 10, 22, 0.86);
-      font: 0.9rem 'Space Grotesk', sans-serif;
-    }
-    body.no-webgl .fallback { display: block; }
-
-    @media (max-width: 720px) {
-      body { min-height: 820vh; }
-      .screen-ui { width: 1000px; height: 680px; }
-    }
+    #ui b { color:#35f4ff; }
   </style>
+  <script async src="https://unpkg.com/es-module-shims@1.10.0/dist/es-module-shims.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+      "cannon-es": "https://cdn.jsdelivr.net/npm/cannon-es@0.20.0/dist/cannon-es.js"
+    }
+  }
+  </script>
 </head>
 <body>
-  <canvas id="webgl" aria-label="First-person 3D high-tech room with laptop"></canvas>
-  <div id="css3d-stage" aria-label="CSS3D laptop screen portfolio"></div>
+  <div id="ui"><b>Use WASD / Arrow Keys</b> to Drive · Click neon pads to open links</div>
 
-  <aside class="hud" aria-hidden="true">
-    <div id="chapter">00 / ENTERING ROOM</div>
-    <div class="progress-track"><span id="progress"></span></div>
-  </aside>
+  <script type="module">
+    import * as THREE from 'three';
+    import * as CANNON from 'cannon-es';
 
-  <div id="custom-cursor" aria-hidden="true">
-    <span class="dot"></span>
-    <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M32.5 9.5C28.1 9.5 24.5 13.1 24.5 17.5V46.4L20.7 42.8C17.6 39.8 12.6 39.8 9.5 42.9C6.6 45.8 6.4 50.4 9 53.6L26.2 74.9C29.3 78.8 34.1 81.1 39.2 81.1H57.3C66.7 81.1 74.3 73.5 74.3 64.1V40.5C74.3 36.3 70.9 32.9 66.7 32.9C65.2 32.9 63.8 33.3 62.6 34.1C61.5 31 58.6 28.8 55.1 28.8C53.3 28.8 51.6 29.4 50.3 30.4C48.9 27.9 46.3 26.3 43.3 26.3C42.3 26.3 41.3 26.5 40.5 26.8V17.5C40.5 13.1 36.9 9.5 32.5 9.5Z" fill="rgba(3,8,18,.98)"/>
-      <path d="M32.5 9.5C28.1 9.5 24.5 13.1 24.5 17.5V46.4L20.7 42.8C17.6 39.8 12.6 39.8 9.5 42.9C6.6 45.8 6.4 50.4 9 53.6L26.2 74.9C29.3 78.8 34.1 81.1 39.2 81.1H57.3C66.7 81.1 74.3 73.5 74.3 64.1V40.5C74.3 36.3 70.9 32.9 66.7 32.9C65.2 32.9 63.8 33.3 62.6 34.1C61.5 31 58.6 28.8 55.1 28.8C53.3 28.8 51.6 29.4 50.3 30.4C48.9 27.9 46.3 26.3 43.3 26.3C42.3 26.3 41.3 26.5 40.5 26.8V17.5C40.5 13.1 36.9 9.5 32.5 9.5Z" stroke="#57F7FF" stroke-width="4" stroke-linejoin="round"/>
-      <path d="M40.5 35.1V53.2M50.6 37.2V54.4M62.6 41.1V56.1M24.8 46.8L36.1 58.5" stroke="#FF4FD8" stroke-width="3.2" stroke-linecap="round"/>
-      <path d="M21 14L10 8M25 5L22 0M43 9L52 2" stroke="#00FF9D" stroke-width="3" stroke-linecap="round"/>
-    </svg>
-  </div>
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x070b16, 50, 260);
 
-  <p class="fallback">WebGL or the CSS3D renderer could not initialize. Please verify CDN access and browser WebGL support.</p>
+    const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 500);
+    camera.position.set(18, 20, 18);
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/renderers/CSS3DRenderer.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    document.body.appendChild(renderer.domElement);
 
-  <script>
-    (() => {
-      const hasDependencies = window.THREE && THREE.CSS3DRenderer && window.gsap && window.ScrollTrigger;
-      if (!hasDependencies) {
-        document.body.classList.add('no-webgl');
-        return;
+    scene.add(new THREE.AmbientLight(0x7db3d1, 0.45));
+    const dl = new THREE.DirectionalLight(0x9bd6ff, 1.2);
+    dl.position.set(20, 30, 10);
+    scene.add(dl);
+    const glow = new THREE.PointLight(0xff4bf4, 1.8, 140);
+    glow.position.set(0, 14, 0);
+    scene.add(glow);
+
+    const world = new CANNON.World({ gravity: new CANNON.Vec3(0, -9.82, 0) });
+    world.broadphase = new CANNON.SAPBroadphase(world);
+    world.defaultContactMaterial.friction = 0.35;
+
+    const floorSize = 240;
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(floorSize, floorSize),
+      new THREE.MeshStandardMaterial({ color:0x090f1e, roughness:.95, metalness:.05 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    scene.add(floor);
+    scene.add(new THREE.GridHelper(floorSize, 120, 0x35f4ff, 0x1d3a57));
+
+    const groundBody = new CANNON.Body({ mass:0, shape:new CANNON.Plane() });
+    groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+    world.addBody(groundBody);
+
+    function textTexture({title='', lines=[]}) {
+      const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+      const x = c.getContext('2d');
+      x.fillStyle = 'rgba(5,12,30,.85)'; x.fillRect(0,0,c.width,c.height);
+      x.strokeStyle = '#35f4ff'; x.lineWidth = 8; x.strokeRect(8,8,c.width-16,c.height-16);
+      x.fillStyle = '#35f4ff'; x.font = '700 56px Arial'; x.fillText(title, 40, 90);
+      x.fillStyle = '#e8f8ff'; x.font = '500 34px Arial';
+      let y = 150; for (const l of lines){ x.fillText(l, 40, y); y += 50; }
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    }
+
+    function billboard(x,z,title,lines){
+      const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(13,6.5),
+        new THREE.MeshBasicMaterial({ map:textTexture({title,lines}), side:THREE.DoubleSide })
+      );
+      m.position.set(x,4.2,z);
+      m.lookAt(0,3,0);
+      scene.add(m);
+    }
+
+    const interactives = [];
+    function button(label, x, z, url, color=0x12dbff){
+      const pad = new THREE.Mesh(
+        new THREE.BoxGeometry(5,0.8,3.2),
+        new THREE.MeshStandardMaterial({ color, emissive:color, emissiveIntensity:.35, metalness:.35, roughness:.4 })
+      );
+      pad.position.set(x,0.45,z);
+      pad.userData.url = url;
+      scene.add(pad);
+      interactives.push(pad);
+
+      const lbl = new THREE.Mesh(new THREE.PlaneGeometry(4.6,1.2), new THREE.MeshBasicMaterial({ map:textTexture({title:label, lines:[]}), transparent:true }));
+      lbl.position.set(x,0.9,z); lbl.rotation.x = -Math.PI/2; lbl.userData.url = url; scene.add(lbl); interactives.push(lbl);
+    }
+
+    // Rover physics
+    const chassisBody = new CANNON.Body({ mass: 180 });
+    chassisBody.addShape(new CANNON.Box(new CANNON.Vec3(1.1,0.35,2.0)));
+    chassisBody.position.set(0,1,0);
+    chassisBody.angularDamping = 0.45;
+    world.addBody(chassisBody);
+
+    const vehicle = new CANNON.RaycastVehicle({ chassisBody, indexRightAxis:0, indexUpAxis:1, indexForwardAxis:2 });
+    const wOpt = {
+      radius: 0.44, directionLocal:new CANNON.Vec3(0,-1,0), axleLocal:new CANNON.Vec3(-1,0,0),
+      suspensionStiffness: 40, suspensionRestLength: 0.35, frictionSlip: 5, dampingRelaxation: 2.3,
+      dampingCompression: 4.4, maxSuspensionForce: 1e5, rollInfluence:0.01, maxSuspensionTravel:0.35
+    };
+    [[-1,0,1.4],[1,0,1.4],[-1,0,-1.4],[1,0,-1.4]].forEach(p=>{ wOpt.chassisConnectionPointLocal = new CANNON.Vec3(...p); vehicle.addWheel(wOpt); });
+    vehicle.addToWorld(world);
+
+    const rover = new THREE.Group(); scene.add(rover);
+    rover.add(new THREE.Mesh(new THREE.BoxGeometry(2.4,.75,4.2), new THREE.MeshStandardMaterial({ color:0x13263b, metalness:.7, roughness:.3 })));
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(1.7,.6,1.8), new THREE.MeshStandardMaterial({ color:0x204666, emissive:0x1f5e86, emissiveIntensity:.3 }));
+    cab.position.y = .65; cab.position.z = .2; rover.add(cab);
+    const nose = new THREE.Mesh(new THREE.BoxGeometry(2,.3,.6), new THREE.MeshStandardMaterial({ color:0x35f4ff, emissive:0x35f4ff, emissiveIntensity:.75 }));
+    nose.position.set(0,.15,2.2); rover.add(nose);
+    const wheelMeshes=[];
+    for(let i=0;i<4;i++){ const w = new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.36,16), new THREE.MeshStandardMaterial({ color:0x0a1018, emissive:0x35f4ff, emissiveIntensity:.25 })); w.rotation.z=Math.PI/2; scene.add(w); wheelMeshes.push(w); }
+
+    // Obstacles
+    const boxGeo = new THREE.BoxGeometry(2,2,2);
+    for(let i=0;i<28;i++){
+      const sx = THREE.MathUtils.randFloat(1.2,2.7), sy = THREE.MathUtils.randFloat(1.1,3), sz = THREE.MathUtils.randFloat(1.2,2.7);
+      const mesh = new THREE.Mesh(boxGeo, new THREE.MeshStandardMaterial({ color:0x253b58, emissive:0x102038, emissiveIntensity:.25 }));
+      mesh.scale.set(sx,sy,sz);
+      const px = THREE.MathUtils.randFloatSpread(140), pz = THREE.MathUtils.randFloatSpread(140);
+      mesh.position.set(px, sy/2, pz); scene.add(mesh);
+      const body = new CANNON.Body({ mass: THREE.MathUtils.randFloat(15,40), shape:new CANNON.Box(new CANNON.Vec3(sx/2,sy/2,sz/2)) });
+      body.position.set(px, sy/2, pz); body.mesh = mesh; world.addBody(body);
+    }
+
+    // Zones
+    billboard(0,-12,'AKASH AGARWAL',[
+      'B.Tech in AI & ML | ML Developer Intern @ Infiltrix',
+      'Competitive Programmer',
+      'Drive around to explore my profile.'
+    ]);
+    billboard(0,-62,'EXPERIENCE & ACHIEVEMENTS',[
+      '• ML Dev Intern @ Infiltrix - latency -30%, accuracy +15%',
+      '• SSoC Top 100 Contributor (4 merged PRs)',
+      '• Tech Organizer for Code Kurukshetra @ KIIT FEST 9.0',
+      '• Web Dev Domain @ AlgoZenith KIIT Chapter'
+    ]);
+    billboard(64,0,'FEATURED PROJECTS',[
+      '• CodeFlowViz-2.0 - Interactive code visualization',
+      '• FinVerify AI - React, FastAPI, Python, Scikit-learn'
+    ]);
+    button('Open CodeFlowViz App',58,8,'https://code-flow-viz-2-0-frontend.vercel.app/');
+    button('Open CodeFlowViz GitHub',66,8,'https://github.com/kauntiaakash2/CodeFlowViz-2.0',0xff3df2);
+
+    billboard(-64,0,'TECH STACK',['Python · C++ · React.js · Next.js · ML · FastAPI · MongoDB']);
+    ['Python','C++','React.js','Next.js','Machine Learning','FastAPI','MongoDB'].forEach((s,i)=>{
+      const a = i/7*Math.PI*2;
+      const cube = new THREE.Mesh(new THREE.BoxGeometry(2.1,2.1,2.1), new THREE.MeshStandardMaterial({ color:0x1f3148, emissive:0x226f96, emissiveIntensity:.2 }));
+      cube.position.set(-70+Math.cos(a)*8,2.2+(i%2)*.8,Math.sin(a)*8); scene.add(cube);
+      const label = new THREE.Mesh(new THREE.PlaneGeometry(2.3,.7), new THREE.MeshBasicMaterial({ map:textTexture({title:s,lines:[]}), transparent:true, side:THREE.DoubleSide }));
+      label.position.set(cube.position.x,cube.position.y+1.45,cube.position.z); label.lookAt(0,4,0); scene.add(label);
+    });
+
+    billboard(0,62,'INITIATE CONTACT',['Drive over or click pads to open links']);
+    button('Email: akashkauntia2006@gmail.com',-15,74,'mailto:akashkauntia2006@gmail.com');
+    button('LinkedIn',-5,79,'https://www.linkedin.com',0xff3df2);
+    button('GitHub',5,74,'https://github.com/kauntiaakash2');
+    button('CodeChef / Codeforces',15,79,'https://www.codechef.com',0xff3df2);
+
+    const keys = { f:0, b:0, l:0, r:0, brake:0 };
+    const map = { KeyW:'f',ArrowUp:'f',KeyS:'b',ArrowDown:'b',KeyA:'l',ArrowLeft:'l',KeyD:'r',ArrowRight:'r',Space:'brake' };
+    addEventListener('keydown',e=>{ if(map[e.code]) keys[map[e.code]]=1; });
+    addEventListener('keyup',e=>{ if(map[e.code]) keys[map[e.code]]=0; });
+
+    function drive(){
+      const force = keys.f ? -1700 : keys.b ? 1100 : 0;
+      vehicle.applyEngineForce(force,2); vehicle.applyEngineForce(force,3);
+      const steer = keys.l ? 0.5 : keys.r ? -0.5 : 0;
+      vehicle.setSteeringValue(steer,0); vehicle.setSteeringValue(steer,1);
+      const br = keys.brake ? 50 : 0; for(let i=0;i<4;i++) vehicle.setBrake(br,i);
+    }
+
+    const raycaster = new THREE.Raycaster(), mouse = new THREE.Vector2();
+    addEventListener('pointerdown',e=>{
+      mouse.x = e.clientX/innerWidth*2-1; mouse.y = -(e.clientY/innerHeight)*2+1;
+      raycaster.setFromCamera(mouse,camera);
+      const hit = raycaster.intersectObjects(interactives)[0];
+      if(hit?.object?.userData?.url) window.open(hit.object.userData.url,'_blank');
+    });
+
+    const camTarget = new THREE.Vector3();
+    const clock = new THREE.Clock();
+    let acc = 0, step = 1/60;
+    function animate(){
+      requestAnimationFrame(animate);
+      const dt = Math.min(clock.getDelta(), .05);
+      acc += dt;
+      drive();
+      while(acc >= step){ world.step(step); acc -= step; }
+
+      rover.position.copy(chassisBody.position);
+      rover.quaternion.copy(chassisBody.quaternion);
+      for(let i=0;i<4;i++){ vehicle.updateWheelTransform(i); wheelMeshes[i].position.copy(vehicle.wheelInfos[i].worldTransform.position); wheelMeshes[i].quaternion.copy(vehicle.wheelInfos[i].worldTransform.quaternion); }
+      world.bodies.forEach(b=>{ if(b.mesh){ b.mesh.position.copy(b.position); b.mesh.quaternion.copy(b.quaternion);} });
+
+      for(const i of interactives){
+        if(i.userData.url && rover.position.distanceTo(i.position) < 1.9 && !i.userData.cool){ i.userData.cool = 160; window.open(i.userData.url,'_blank'); }
+        if(i.userData.cool) i.userData.cool--;
       }
 
-      gsap.registerPlugin(ScrollTrigger);
+      const forward = new THREE.Vector3(0,0,1).applyQuaternion(rover.quaternion).normalize();
+      const right = new THREE.Vector3(1,0,0).applyQuaternion(rover.quaternion).normalize();
+      camTarget.copy(rover.position);
+      const desired = camTarget.clone().addScaledVector(forward,12).addScaledVector(right,12).add(new THREE.Vector3(0,15,0));
+      camera.position.lerp(desired, 0.08);
+      camera.lookAt(camTarget.x, camTarget.y+1.2, camTarget.z);
 
-      const canvas = document.getElementById('webgl');
-      const cssStage = document.getElementById('css3d-stage');
-      const progress = document.getElementById('progress');
-      const chapter = document.getElementById('chapter');
-      const cursor = document.getElementById('custom-cursor');
-      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      renderer.render(scene,camera);
+    }
+    animate();
 
-      const scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x05070d);
-      scene.fog = new THREE.Fog(0x05070d, 8, 26);
-
-      const cssScene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(48, window.innerWidth / window.innerHeight, 0.01, 90);
-      camera.position.set(-1.8, 2.45, 8.6);
-      camera.lookAt(0, 1.55, -2.15);
-
-      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.outputEncoding = THREE.sRGBEncoding;
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.physicallyCorrectLights = true;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.04;
-
-      const cssRenderer = new THREE.CSS3DRenderer();
-      cssRenderer.setSize(window.innerWidth, window.innerHeight);
-      cssRenderer.domElement.style.position = 'fixed';
-      cssRenderer.domElement.style.inset = '0';
-      cssRenderer.domElement.style.pointerEvents = 'none';
-      cssStage.appendChild(cssRenderer.domElement);
-
-      const mat = {
-        wall: new THREE.MeshStandardMaterial({ color: 0x101722, roughness: 0.78, metalness: 0.08 }),
-        floor: new THREE.MeshStandardMaterial({ color: 0x080d15, roughness: 0.62, metalness: 0.28 }),
-        desk: new THREE.MeshStandardMaterial({ color: 0x151a21, roughness: 0.46, metalness: 0.42 }),
-        deskEdge: new THREE.MeshStandardMaterial({ color: 0x283849, roughness: 0.35, metalness: 0.62 }),
-        laptop: new THREE.MeshStandardMaterial({ color: 0x0d1118, roughness: 0.32, metalness: 0.72 }),
-        laptopEdge: new THREE.MeshStandardMaterial({ color: 0x68798d, roughness: 0.26, metalness: 0.86 }),
-        key: new THREE.MeshStandardMaterial({ color: 0x080b10, roughness: 0.58, metalness: 0.12 }),
-        emissiveCyan: new THREE.MeshStandardMaterial({ color: 0x57f7ff, emissive: 0x57f7ff, emissiveIntensity: 3.2, roughness: 0.18 }),
-        emissiveAcid: new THREE.MeshStandardMaterial({ color: 0x00ff9d, emissive: 0x00ff9d, emissiveIntensity: 2.8, roughness: 0.18 }),
-        screenGlass: new THREE.MeshStandardMaterial({ color: 0x05101a, emissive: 0x57f7ff, emissiveIntensity: 0.16, roughness: 0.18, metalness: 0.35, transparent: true, opacity: 0.55 })
-      };
-
-      const cast = (mesh) => {
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        return mesh;
-      };
-
-      const roundedShape = (width, height, radius) => {
-        const x = -width / 2;
-        const y = -height / 2;
-        const shape = new THREE.Shape();
-        shape.moveTo(x + radius, y);
-        shape.lineTo(x + width - radius, y);
-        shape.quadraticCurveTo(x + width, y, x + width, y + radius);
-        shape.lineTo(x + width, y + height - radius);
-        shape.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        shape.lineTo(x + radius, y + height);
-        shape.quadraticCurveTo(x, y + height, x, y + height - radius);
-        shape.lineTo(x, y + radius);
-        shape.quadraticCurveTo(x, y, x + radius, y);
-        return shape;
-      };
-
-      const roundedSlab = (width, depth, height, radius, material, bevel = 0.035) => {
-        const geometry = new THREE.ExtrudeGeometry(roundedShape(width, depth, radius), {
-          depth: height,
-          bevelEnabled: true,
-          bevelSegments: 8,
-          bevelSize: bevel,
-          bevelThickness: bevel,
-          curveSegments: 18
-        });
-        geometry.center();
-        geometry.rotateX(Math.PI / 2);
-        return cast(new THREE.Mesh(geometry, material));
-      };
-
-      const roundedPanel = (width, height, depth, radius, material, bevel = 0.025) => {
-        const geometry = new THREE.ExtrudeGeometry(roundedShape(width, height, radius), {
-          depth,
-          bevelEnabled: true,
-          bevelSegments: 8,
-          bevelSize: bevel,
-          bevelThickness: bevel,
-          curveSegments: 18
-        });
-        geometry.center();
-        return cast(new THREE.Mesh(geometry, material));
-      };
-
-      const hemi = new THREE.HemisphereLight(0x9edcff, 0x080a12, 1.1);
-      scene.add(hemi);
-
-      const keyLight = new THREE.SpotLight(0xd6f5ff, 90, 28, Math.PI / 5.6, 0.55, 1.35);
-      keyLight.position.set(-2.7, 6.2, 3.8);
-      keyLight.target.position.set(0, 1.2, -2.2);
-      keyLight.castShadow = true;
-      keyLight.shadow.mapSize.set(2048, 2048);
-      keyLight.shadow.bias = -0.00008;
-      scene.add(keyLight, keyLight.target);
-
-      const rimLight = new THREE.SpotLight(0xa855f7, 38, 22, Math.PI / 6, 0.6, 1.45);
-      rimLight.position.set(3.8, 4.5, -6.2);
-      rimLight.target.position.set(0, 1.4, -2.3);
-      scene.add(rimLight, rimLight.target);
-
-      const screenLight = new THREE.PointLight(0x57f7ff, 0, 8.5, 1.8);
-      screenLight.position.set(0, 2.35, -2.02);
-      scene.add(screenLight);
-
-      const room = new THREE.Group();
-      const floor = cast(new THREE.Mesh(new THREE.PlaneGeometry(18, 24, 48, 48), mat.floor));
-      floor.rotation.x = -Math.PI / 2;
-      floor.position.z = -2;
-      room.add(floor);
-
-      const backWall = cast(new THREE.Mesh(new THREE.PlaneGeometry(18, 7, 48, 20), mat.wall));
-      backWall.position.set(0, 3.5, -8);
-      room.add(backWall);
-
-      const leftWall = cast(new THREE.Mesh(new THREE.PlaneGeometry(24, 7, 48, 20), mat.wall));
-      leftWall.rotation.y = Math.PI / 2;
-      leftWall.position.set(-9, 3.5, -2);
-      room.add(leftWall);
-
-      const rightWall = cast(new THREE.Mesh(new THREE.PlaneGeometry(24, 7, 48, 20), mat.wall));
-      rightWall.rotation.y = -Math.PI / 2;
-      rightWall.position.set(9, 3.5, -2);
-      room.add(rightWall);
-      scene.add(room);
-
-      const stripGeo = new THREE.BoxGeometry(0.055, 0.035, 13.5, 8, 1, 36);
-      const leftStrip = new THREE.Mesh(stripGeo, mat.emissiveAcid);
-      leftStrip.position.set(-1.15, 0.028, -1.3);
-      const rightStrip = leftStrip.clone();
-      rightStrip.position.x = 1.15;
-      scene.add(leftStrip, rightStrip);
-
-      const desk = new THREE.Group();
-      const deskTop = roundedSlab(6.4, 2.55, 0.22, 0.22, mat.desk, 0.045);
-      deskTop.position.set(0, 1.25, -2.2);
-      desk.add(deskTop);
-      const deskBevel = roundedSlab(6.65, 2.75, 0.08, 0.26, mat.deskEdge, 0.035);
-      deskBevel.position.set(0, 1.40, -2.2);
-      desk.add(deskBevel);
-      const legGeo = new THREE.CylinderGeometry(0.065, 0.09, 1.25, 24);
-      [[-2.85, -1.15], [2.85, -1.15], [-2.85, 1.15], [2.85, 1.15]].forEach(([x, z]) => {
-        const leg = cast(new THREE.Mesh(legGeo, mat.deskEdge));
-        leg.position.set(x, 0.65, -2.2 + z);
-        desk.add(leg);
-      });
-      scene.add(desk);
-
-      const laptop = new THREE.Group();
-      laptop.position.set(0, 1.55, -2.18);
-      scene.add(laptop);
-
-      const base = roundedSlab(4.95, 3.05, 0.13, 0.18, mat.laptop, 0.025);
-      laptop.add(base);
-      const baseLip = roundedSlab(5.1, 3.18, 0.045, 0.2, mat.laptopEdge, 0.018);
-      baseLip.position.y = 0.088;
-      laptop.add(baseLip);
-
-      const trackpad = roundedSlab(1.2, 0.74, 0.018, 0.08, mat.laptopEdge, 0.012);
-      trackpad.position.set(0, 0.172, 0.72);
-      laptop.add(trackpad);
-
-      const keyGeo = new THREE.BoxGeometry(0.25, 0.026, 0.18, 5, 1, 4);
-      for (let row = 0; row < 4; row++) {
-        for (let col = 0; col < 13; col++) {
-          const key = cast(new THREE.Mesh(keyGeo, mat.key));
-          key.position.set((col - 6) * 0.31 + (row % 2) * 0.045, 0.176, -0.75 + row * 0.25);
-          laptop.add(key);
-        }
-      }
-
-      const hingeGeo = new THREE.CylinderGeometry(0.075, 0.075, 4.78, 32);
-      const hinge = cast(new THREE.Mesh(hingeGeo, mat.laptopEdge));
-      hinge.rotation.z = Math.PI / 2;
-      hinge.position.set(0, 0.14, -1.46);
-      laptop.add(hinge);
-
-      const screenPivot = new THREE.Group();
-      screenPivot.position.set(0, 0.14, -1.46);
-      screenPivot.rotation.x = -1.5;
-      laptop.add(screenPivot);
-
-      const lidBack = roundedPanel(5.12, 3.18, 0.12, 0.20, mat.laptop, 0.025);
-      lidBack.position.set(0, 1.56, -0.08);
-      screenPivot.add(lidBack);
-
-      const screenGlowPlane = new THREE.Mesh(new THREE.PlaneGeometry(4.72, 2.84, 32, 18), mat.screenGlass);
-      screenGlowPlane.position.set(0, 1.56, 0.005);
-      screenPivot.add(screenGlowPlane);
-
-      const cameraStatus = { x: -1.8, y: 2.45, z: 8.6, tx: 0, ty: 1.45, tz: -2.15, fov: 48, sway: 0 };
-      const pointer = { x: 0, y: 0 };
-      const chapters = ['00 / ENTERING ROOM', '01 / APPROACHING DESK', '02 / SITTING DOWN', '03 / OPENING LAPTOP', '04 / DIVING INTO SCREEN'];
-
-      const screenElement = document.createElement('div');
-      screenElement.className = 'screen-ui font-space';
-      screenElement.innerHTML = `
-        <main class="relative min-h-full p-10 md:p-12">
-          <section class="glass-card rounded-[2rem] p-8 md:p-10 mb-8">
-            <p class="font-code text-acid tracking-[0.35em] text-sm uppercase mb-5">portfolio://akash-agarwal</p>
-            <h1 class="text-7xl md:text-8xl font-bold leading-[0.85] tracking-[-0.08em] bg-gradient-to-r from-white via-cyanx to-plasma bg-clip-text text-transparent">AKASH<br/>AGARWAL</h1>
-            <p class="mt-7 text-3xl leading-snug text-white/86">B.Tech in AI &amp; ML Student | ML Developer Intern @ Infiltrix | Competitive Programmer</p>
-            <p class="mt-6 text-2xl leading-relaxed text-white/68">Proficient in Python, C++, React, and Next.js. Experienced in developing scalable, user-centric applications and intelligent systems.</p>
-          </section>
-
-          <div class="grid grid-cols-1 xl:grid-cols-[1.04fr_.96fr] gap-8">
-            <section class="glass-card rounded-[2rem] p-8">
-              <h2 class="font-code text-cyanx tracking-[0.25em] text-sm uppercase mb-6">Experience &amp; Achievements</h2>
-              <ul class="space-y-5 text-xl leading-relaxed text-white/76">
-                <li><span class="text-acid">✦</span> <strong class="text-white">ML Development Intern @ Infiltrix:</strong> Optimized production-grade systems, achieving a 30% reduction in prediction latency and enhancing model accuracy by 15%.</li>
-                <li><span class="text-acid">✦</span> <strong class="text-white">Top 100 Contributor @ Social Summer of Code (SSoC):</strong> Contributed to open-source with 4 merged PRs.</li>
-                <li><span class="text-acid">✦</span> Tech Organizer @ KIIT FEST 9.0: "Code Kurukshetra"</li>
-                <li><span class="text-acid">✦</span> Web Dev &amp; CP Trainee @ AlgoZenith KIIT Chapter</li>
-                <li><span class="text-acid">✦</span> Built timetable optimization system for 1000+ students.</li>
-              </ul>
-            </section>
-
-            <section class="glass-card rounded-[2rem] p-8">
-              <h2 class="font-code text-cyanx tracking-[0.25em] text-sm uppercase mb-6">Skills Stack</h2>
-              <div class="grid gap-4 text-lg text-white/74">
-                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Programming</h3><p>Python, C++, Java, JavaScript, React.js, Next.js, Node.js, FastAPI</p></div>
-                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Database &amp; Cloud</h3><p>MySQL, MongoDB, Firebase, AWS</p></div>
-                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Core</h3><p>Data Structures &amp; Algorithms, OOP, Machine Learning</p></div>
-                <div class="chip rounded-3xl p-5"><h3 class="font-code text-acid mb-2">Tools</h3><p>Git, Docker, Postman, Linux</p></div>
-              </div>
-            </section>
-          </div>
-
-          <section class="glass-card rounded-[2rem] p-8 mt-8 mb-8">
-            <h2 class="font-code text-cyanx tracking-[0.25em] text-sm uppercase mb-6">Highlighted Projects</h2>
-            <div class="grid xl:grid-cols-2 gap-6">
-              <article class="chip rounded-3xl p-6">
-                <h3 class="text-3xl font-bold text-white">CodeFlowViz-2.0</h3>
-                <p class="mt-3 text-xl leading-relaxed text-white/72">Interactive code visualization platform.</p>
-                <div class="mt-6 flex flex-wrap gap-3 font-code text-base">
-                  <a class="screen-link" data-clickable href="https://code-flow-viz-2-0-frontend.vercel.app/" target="_blank" rel="noreferrer"><i class="fa-solid fa-rocket"></i> Live Demo</a>
-                  <a class="screen-link" data-clickable href="https://github.com/kauntiaakash2/CodeFlowViz-2.0" target="_blank" rel="noreferrer"><i class="fa-brands fa-github"></i> GitHub</a>
-                </div>
-              </article>
-              <article class="chip rounded-3xl p-6">
-                <h3 class="text-3xl font-bold text-white">FinVerify AI</h3>
-                <p class="mt-3 text-xl leading-relaxed text-white/72">Low-latency multi-source data pipeline leveraging yfinance and FMP, achieving under 2s response time and 57% verification accuracy. Tech: React, FastAPI, Python, Scikit-learn, MongoDB.</p>
-              </article>
-            </div>
-          </section>
-
-          <footer class="terminal-dock -mx-10 md:-mx-12 -mb-10 md:-mb-12 p-6 md:p-8 font-code">
-            <p class="terminal-line text-white/70 mb-5">contact --mode=instant</p>
-            <div class="grid grid-cols-2 xl:grid-cols-6 gap-3 text-sm">
-              <a class="screen-link" data-clickable href="tel:+919060245158" target="_blank"><i class="fa-solid fa-phone"></i> Phone</a>
-              <a class="screen-link" data-clickable href="mailto:akashkauntia2006@gmail.com" target="_blank"><i class="fa-solid fa-envelope"></i> Email</a>
-              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>
-              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-brands fa-github"></i> GitHub</a>
-              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-solid fa-code"></i> CodeChef · 2 STAR - 1465</a>
-              <a class="screen-link" data-clickable href="#" target="_blank"><i class="fa-solid fa-terminal"></i> Codeforces · 915</a>
-            </div>
-          </footer>
-        </main>`;
-
-      const cssScreenPivot = new THREE.Group();
-      cssScreenPivot.position.copy(laptop.position).add(screenPivot.position);
-      cssScreenPivot.rotation.x = screenPivot.rotation.x;
-      cssScene.add(cssScreenPivot);
-
-      const screenObject = new THREE.CSS3DObject(screenElement);
-      screenObject.position.set(0, 1.56, 0.012);
-      screenObject.scale.setScalar(4.72 / 1200);
-      cssScreenPivot.add(screenObject);
-
-      const applyCamera = () => {
-        const walkBob = Math.sin(cameraStatus.sway * Math.PI * 2) * 0.035;
-        camera.position.set(
-          cameraStatus.x + pointer.x * 0.045,
-          cameraStatus.y + walkBob + pointer.y * 0.035,
-          cameraStatus.z
-        );
-        camera.fov = cameraStatus.fov;
-        camera.updateProjectionMatrix();
-        camera.lookAt(
-          cameraStatus.tx + pointer.x * 0.10,
-          cameraStatus.ty + pointer.y * 0.07,
-          cameraStatus.tz
-        );
-      };
-
-      const setChapter = (self) => {
-        progress.style.width = `${self.progress * 100}%`;
-        const idx = Math.min(chapters.length - 1, Math.floor(self.progress * chapters.length));
-        chapter.textContent = chapters[idx];
-      };
-
-      if (prefersReduced) {
-        cameraStatus.x = 0;
-        cameraStatus.y = 2.08;
-        cameraStatus.z = -0.13;
-        cameraStatus.tx = 0;
-        cameraStatus.ty = 2.72;
-        cameraStatus.tz = -3.64;
-        cameraStatus.fov = 30;
-        screenPivot.rotation.x = -0.08;
-        screenLight.intensity = 18;
-        progress.style.width = '100%';
-        chapter.textContent = chapters[chapters.length - 1];
-      } else {
-        gsap.timeline({
-          defaults: { ease: 'none' },
-          scrollTrigger: {
-            trigger: document.body,
-            start: 'top top',
-            end: 'bottom bottom',
-            scrub: 1.1,
-            onUpdate: setChapter
-          }
-        })
-          .to(cameraStatus, { x: -0.78, y: 2.22, z: 4.1, tx: -0.12, ty: 1.48, tz: -2.24, sway: 1, duration: 0.25 }, 0)
-          .to(cameraStatus, { x: 0, y: 1.64, z: 2.1, tx: 0, ty: 1.48, tz: -2.4, sway: 1.6, duration: 0.25 }, 0.25)
-          .to(cameraStatus, { x: 0, y: 1.82, z: 1.46, tx: 0, ty: 1.72, tz: -2.58, fov: 42, duration: 0.18 }, 0.42)
-          .to(screenPivot.rotation, { x: -0.08, duration: 0.25, ease: 'power2.inOut' }, 0.50)
-          .to(screenLight, { intensity: 18, duration: 0.20, ease: 'power2.out' }, 0.56)
-          .to(mat.screenGlass, { emissiveIntensity: 1.15, opacity: 0.38, duration: 0.20 }, 0.56)
-          .to(cameraStatus, { x: 0, y: 2.00, z: 0.55, tx: 0, ty: 2.54, tz: -3.48, fov: 34, duration: 0.16 }, 0.75)
-          .to(cameraStatus, { x: 0, y: 2.08, z: -0.13, tx: 0, ty: 2.72, tz: -3.64, fov: 30, duration: 0.09 }, 0.91);
-      }
-
-      window.addEventListener('mousemove', (event) => {
-        pointer.x = (event.clientX / window.innerWidth - 0.5) * 2;
-        pointer.y = -(event.clientY / window.innerHeight - 0.5) * 2;
-      }, { passive: true });
-
-      const cursorX = gsap.quickTo(cursor, 'x', { duration: 0.2, ease: 'power3.out' });
-      const cursorY = gsap.quickTo(cursor, 'y', { duration: 0.2, ease: 'power3.out' });
-      window.addEventListener('mousemove', (event) => {
-        cursorX(event.clientX);
-        cursorY(event.clientY);
-      }, { passive: true });
-      document.addEventListener('pointerover', (event) => {
-        if (event.target.closest('a, button, [data-clickable]')) cursor.classList.add('is-pointer');
-      });
-      document.addEventListener('pointerout', (event) => {
-        if (event.target.closest('a, button, [data-clickable]')) cursor.classList.remove('is-pointer');
-      });
-
-      const resize = () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        cssRenderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        ScrollTrigger.refresh();
-      };
-      window.addEventListener('resize', resize);
-
-      const clock = new THREE.Clock();
-      const render = () => {
-        const elapsed = clock.getElapsedTime();
-        leftStrip.material.emissiveIntensity = 2.4 + Math.sin(elapsed * 2.4) * 0.35;
-        rightStrip.material.emissiveIntensity = 2.4 + Math.cos(elapsed * 2.2) * 0.35;
-        rimLight.intensity = 34 + Math.sin(elapsed * 1.1) * 4;
-        screenGlowPlane.material.emissiveIntensity = mat.screenGlass.emissiveIntensity + Math.sin(elapsed * 4.2) * 0.04;
-
-        cssScreenPivot.position.copy(laptop.position).add(screenPivot.position);
-        cssScreenPivot.rotation.copy(laptop.rotation);
-        cssScreenPivot.rotation.x += screenPivot.rotation.x;
-
-        applyCamera();
-        renderer.render(scene, camera);
-        cssRenderer.render(cssScene, camera);
-        requestAnimationFrame(render);
-      };
-      render();
-    })();
+    addEventListener('resize',()=>{
+      camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+    });
   </script>
 </body>
 </html>
